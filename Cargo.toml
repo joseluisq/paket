@@ -1,0 +1,17 @@
+[package]
+name = "paket"
+version = "0.0.0"
+description = "A experimental package manager for the Fish shell"
+authors = ["Jose Quintana <git.io/joseluisq>"]
+edition = "2018"
+
+[dependencies]
+dirs = "3.0"
+toml = "0.5"
+structopt = "0.3"
+anyhow = "1.0"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
