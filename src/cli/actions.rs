@@ -1,7 +1,7 @@
 use std::fs;
 
-use crate::fs_helper;
 use crate::git::Git;
+use crate::helpers;
 use crate::paket::Paket;
 use crate::pkg::validator::PkgValidator;
 use crate::result::Result;
@@ -23,19 +23,20 @@ impl<'a> Actions<'a> {
         let pkg_name = &pkgv.get_user_pkg_name();
         let pkg_tag = Some(pkgv.pkg_tag.as_ref());
 
+        let branch_tag = pkg_tag.unwrap_or("");
+        println!("installing package `{}{}`", &pkg_name, branch_tag);
+
         if self.pk.pkg_exists(pkg_name) {
             bail!(
-                "package `{}` was already installed. Try to use the `up` command to upgrade it.",
+                "package `{}` is already installed. Try to use the `up` command to upgrade it.",
                 pkg_name
             );
         }
 
         self.git.clone(pkg_name, pkg_tag)?;
 
-        // TODO: process Fish shell package structure
-        let mut pkg_dir = self.git.base_dir.clone();
-        pkg_dir.push(&pkg_name);
-
+        // Process Fish shell package structure
+        let pkg_dir = self.git.base_dir.join(&pkg_name);
         if !self.pk.pkg_exists(pkg_name) {
             bail!("package `{}` was not cloned with success.", pkg_name);
         }
@@ -43,38 +44,30 @@ impl<'a> Actions<'a> {
         // Copy `configuration snippets` -> conf.d/*.fish
         // Copy `completions` -> completions/*.fish
         // Copy `functions` -> functions/*.fish
-        let mut snippets = self.pk.fish_dir.clone();
-        snippets.push("conf.d");
-        let snippets = snippets.canonicalize()?;
-
-        let mut completions = self.pk.fish_dir.clone();
-        completions.push("completions");
-        let completions = completions.canonicalize()?;
-
-        let mut functions = self.pk.fish_dir.clone();
-        functions.push("functions");
-        let functions = functions.canonicalize()?;
+        let snippets = self.pk.fish_dir.join("conf.d").canonicalize()?;
+        let completions = self.pk.fish_dir.join("completions").canonicalize()?;
+        let functions = self.pk.fish_dir.join("functions").canonicalize()?;
 
         let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
-        while let Some(working_path) = stack_paths.pop() {
-            println!("working path: {:?}", &working_path);
+        // TODO: Detect and read the `paket.toml` file
 
+        while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
 
                 if path.is_dir() {
                     // Check for valid allowed directories
-                    if fs_helper::contains_any_suffixes(&path, &path_suffixes) {
+                    if helpers::file::has_any_suffixes(&path, &path_suffixes) {
                         stack_paths.push(path);
                     }
                     continue;
                 }
 
+                // Check for files with allowed directory parents
                 if let Some(parent) = path.parent() {
-                    // Check for files with allowed directory parents
-                    if !fs_helper::contains_any_suffixes(&parent, &path_suffixes) {
+                    if !helpers::file::has_any_suffixes(&parent, &path_suffixes) {
                         continue;
                     }
 
@@ -89,8 +82,15 @@ impl<'a> Actions<'a> {
                     // TODO: copy the .fish files to their corresponding dirs
                     match path.file_name() {
                         Some(filename) => {
-                            let dest_path = fish_dir.join(filename);
-                            println!("  copy: {:?} -> {:?}", &path, &dest_path);
+                            let is_fish_file = match filename.to_str() {
+                                Some(f) => f.ends_with(".fish"),
+                                _ => false,
+                            };
+
+                            if is_fish_file {
+                                let dest_path = fish_dir.join(filename);
+                                fs::copy(&path, &dest_path)?;
+                            }
                         }
                         None => {
                             bail!("failed to get file name for path {:?}", path);
@@ -99,6 +99,16 @@ impl<'a> Actions<'a> {
                 }
             }
         }
+
+        // TODO: Invoke Fish shell events
+        let cwd = std::env::current_dir()?;
+        let mut cmd = helpers::cmd::Cmd::new("fish", &cwd);
+        cmd.arg("-v");
+        let out = cmd.execute()?;
+
+        println!("{}", out);
+
+        println!("package was installed successfully");
 
         Ok(())
     }
@@ -111,7 +121,7 @@ impl<'a> Actions<'a> {
 
         if !self.pk.pkg_exists(pkg_name) {
             bail!(
-                "package `{}` was not installed. Try to use the `add` command to install it first.",
+                "package `{}` is not installed. Try to use the `add` command to install it first.",
                 pkg_name
             );
         }

@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 
+use crate::helpers;
 use crate::result::Result;
 
 pub struct Git {
@@ -33,23 +33,6 @@ impl Git {
         "git"
     }
 
-    fn get_current_dir(&self) -> &PathBuf {
-        &self.current_dir
-    }
-
-    fn set_current_dir(&mut self, dirpath: &PathBuf) {
-        self.current_dir = dirpath.to_owned();
-    }
-
-    pub fn command(&self) -> Command {
-        let mut cmd = Command::new(self.exec_name());
-        cmd.current_dir(self.get_current_dir());
-        cmd.stdin(Stdio::null());
-        cmd.stdout(Stdio::piped());
-        cmd.stderr(Stdio::piped());
-        cmd
-    }
-
     pub fn clone(&self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
         let endpoint = Git::get_remote_endpoint(user_repo_name);
 
@@ -61,34 +44,28 @@ impl Git {
         }
 
         let branch_tag = branch_tag.unwrap_or("master");
-
         let mut branch_str = String::from("--branch=");
         branch_str.push_str(branch_tag);
 
-        execute_command(
-            self.command()
-                .arg("clone")
-                .arg("--depth=1")
-                .arg(branch_str)
-                .arg(&endpoint)
-                .arg(out_dir),
-        )
+        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &self.current_dir);
+        cmd.arg("clone")
+            .arg("--depth=1")
+            .arg(branch_str)
+            .arg(&endpoint)
+            .arg(out_dir);
+        cmd.execute()
     }
 
     pub fn fetch(&mut self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
         let branch_tag = branch_tag.unwrap_or("master");
+        let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        let mut cwd = self.base_dir.clone();
-        cwd.push(user_repo_name);
-        self.set_current_dir(&cwd);
-
-        execute_command(
-            self.command()
-                .arg("fetch")
-                .arg("--depth=1")
-                .arg("origin")
-                .arg(branch_tag),
-        )
+        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &cwd);
+        cmd.arg("fetch")
+            .arg("--depth=1")
+            .arg("origin")
+            .arg(branch_tag);
+        cmd.execute()
     }
 
     pub fn checkout(&mut self, user_repo_name: &str, branch: Option<&str>) -> Result<String> {
@@ -97,44 +74,21 @@ impl Git {
         }
 
         let branch = branch.unwrap();
+        let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        let mut cwd = self.base_dir.clone();
-        cwd.push(user_repo_name);
-        self.set_current_dir(&cwd);
-
-        execute_command(self.command().arg("checkout").arg(branch))
+        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &cwd);
+        cmd.arg("checkout").arg(branch);
+        cmd.execute()
     }
 
     pub fn pull(&mut self, user_repo_name: &str) -> Result<String> {
-        let mut repo_dir = self.base_dir.clone();
-        repo_dir.push(user_repo_name);
-
+        let repo_dir = self.base_dir.join(user_repo_name);
         if !repo_dir.exists() {
             bail!("repository `{}` was not found", user_repo_name);
         }
 
-        self.set_current_dir(&repo_dir);
-        execute_command(self.command().arg("pull").arg("origin").arg("master"))
-    }
-}
-
-fn execute_command(command: &mut Command) -> Result<String> {
-    match command.output() {
-        Ok(out) => {
-            let success = out.status.success();
-
-            let out = if success { out.stdout } else { out.stderr };
-            let res = String::from_utf8(out).map_err(|err| anyhow!(err.to_string()));
-
-            if !success {
-                bail!("{}", res?);
-            }
-
-            res
-        }
-        Err(err) => {
-            // unexpected error when executing a command
-            bail!("{}", err)
-        }
+        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &repo_dir);
+        cmd.arg("pull").arg("origin").arg("master");
+        cmd.execute()
     }
 }

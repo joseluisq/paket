@@ -5,8 +5,6 @@ authors = ["Jose Quintana <git.io/joseluisq>"]
 license = "MIT OR Apache-2.0"
 description = "Speed up your Git workflow. 🐠"
 repository = "https://github.com/joseluisq/gitnow"
-
-[dependencies]
 keywords = [
     "git",
     "git-workflow",
@@ -16,3 +14,5 @@ keywords = [
     "bitbucket",
     "github"
 ]
+
+[dependencies]

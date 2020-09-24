@@ -2,8 +2,24 @@
 name = "paket"
 version = "0.0.0"
 description = "A experimental package manager for the Fish shell"
+license = "MIT OR Apache-2.0"
 authors = ["Jose Quintana <git.io/joseluisq>"]
+keywords = [
+	"cli",
+	"fish-shell",
+	"package-manager"
+]
+categories = ["command-line-utilities"]
 edition = "2018"
+include = ["src/**/*", "Cargo.toml", "Cargo.lock"]
+
+[[bin]]
+name = "paket"
+path = "src/bin/paket.rs"
+
+[lib]
+name = "paket"
+path = "src/lib.rs"
 
 [dependencies]
 dirs = "3.0"
