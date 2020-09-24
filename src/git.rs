@@ -5,19 +5,11 @@ use std::process::{Command, Stdio};
 use crate::result::Result;
 
 pub struct Git {
-    base_dir: PathBuf,
-    current_dir: PathBuf,
+    pub base_dir: PathBuf,
+    pub current_dir: PathBuf,
 }
 
 impl Git {
-    fn get_remote_endpoint(user_repo_name: &str) -> String {
-        // TODO: GitHub support for now
-        let mut origin = String::from("https://github.com/");
-        origin.push_str(user_repo_name);
-        origin.push_str(".git");
-        origin
-    }
-
     pub fn new<P: AsRef<Path>>(base_dir: P) -> Result<Self>
     where
         PathBuf: From<P>,
@@ -29,15 +21,23 @@ impl Git {
         })
     }
 
-    pub fn exec_name(&self) -> &'static str {
+    fn get_remote_endpoint(user_repo_name: &str) -> String {
+        // TODO: GitHub support for now
+        let mut origin = String::from("https://github.com/");
+        origin.push_str(user_repo_name);
+        origin.push_str(".git");
+        origin
+    }
+
+    fn exec_name(&self) -> &'static str {
         "git"
     }
 
-    pub fn get_current_dir(&self) -> &PathBuf {
+    fn get_current_dir(&self) -> &PathBuf {
         &self.current_dir
     }
 
-    pub fn set_current_dir(&mut self, dirpath: &PathBuf) {
+    fn set_current_dir(&mut self, dirpath: &PathBuf) {
         self.current_dir = dirpath.to_owned();
     }
 
@@ -118,7 +118,7 @@ impl Git {
     }
 }
 
-pub fn execute_command(command: &mut Command) -> Result<String> {
+fn execute_command(command: &mut Command) -> Result<String> {
     match command.output() {
         Ok(out) => {
             let success = out.status.success();

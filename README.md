@@ -46,12 +46,13 @@ SUBCOMMANDS:
 
 Because its and an experimental repository some key functionalies are missing right now. So feel free to contribute.
 
-- [ ] Add/Update commands: Symlinking Fish shell files according to [the package structure](https://fishshell.com/docs/current/#autoloading-functions).
+- [ ] Add/Update commands: Copy Fish shell files according to [the package structure](https://fishshell.com/docs/current/#autoloading-functions).
 - [ ] Add a `remove` command.
 - [ ] Add package file `paket.toml` support.
 - [ ] Add config file `~/paket.toml` support.
 - [ ] Dependencies support.
 - [ ] Add support for Bitbucket, Gitlab, etc.
+- [ ] Prevent unnecessary clones for same versions (tags)
 - [ ] ?
 
 ## Contributions

@@ -5,6 +5,7 @@ extern crate anyhow;
 pub mod result;
 
 pub mod cli;
+pub mod fs_helper;
 pub mod git;
 pub mod paket;
 pub mod pkg;
