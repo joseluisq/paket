@@ -1,12 +1,12 @@
 # Paket
 
-> A experimental package manager for the [Fish shell](https://fishshell.com/).
+> An experimental package manager for the [Fish shell](https://fishshell.com/). 🐠
 
-This is an *experimental* Git-based *"package manager"* for Fish shell.
+This is an *experimental* Git-based *"package manager"* for Fish shell which is under **active** development.
 
 ## Features
 
-- Rely only on [Git](https://git-scm.com/) binary and its well known features (clone, fetch,checkout, pull, etc).
+- Rely only on [Git](https://git-scm.com/) binary and its well known features (clone, fetch, checkout, pull, tag, etc).
 - No registries. Git repositories instead.
 - Just uses the format: `username/package_name@(tag_name|branch_name)`
 - Tiny but ultra fast static binary powered by [Rust](https://www.rust-lang.org/).
@@ -34,19 +34,19 @@ SUBCOMMANDS:
     up      Update an existing package
 ```
 
-### Package examples
+### Examples
 
 ```sh
 ~> paket add joseluisq/gitnow@2.4.0
 ~> paket up joseluisq/gitnow@2.5.0
-~> paket remove joseluisq/gitnow
+~> paket rm joseluisq/gitnow
 ```
 
 ## TODO
 
 Because its and an experimental repository some key functionalies are missing right now. So feel free to contribute.
 
-- [ ] Add/Update commands: Copy Fish shell files according to [the package structure](https://fishshell.com/docs/current/#autoloading-functions).
+- [x] Add/Update commands: Copy Fish shell files according to [the package structure](https://fishshell.com/docs/current/#autoloading-functions).
 - [ ] Add a `remove` command.
 - [ ] Add package file `paket.toml` support.
 - [ ] Add config file `~/paket.toml` support.

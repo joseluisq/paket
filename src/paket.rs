@@ -5,6 +5,7 @@ use structopt::StructOpt;
 use crate::cli::{App, CommandOpts};
 use crate::result::Result;
 
+/// Packet is a package manager for the Fish shell.
 pub struct Paket {
     pub fish_dir: PathBuf,
     pub paket_dir: PathBuf,
@@ -12,6 +13,7 @@ pub struct Paket {
 }
 
 impl Paket {
+    /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
         let (fish_dir, paket_dir) = Self::configure()?;
         let opts = CommandOpts::from_args();
@@ -23,22 +25,20 @@ impl Paket {
         })
     }
 
+    /// Configure directory paths used by `Paket`.
     fn configure() -> Result<(PathBuf, PathBuf)> {
-        let mut home_dir = dirs::home_dir()
+        let home_dir = dirs::home_dir()
             .expect("Paket: config directory not found")
             .canonicalize()?;
 
         // Config directory
-        home_dir.push(".config");
-        let mut config_dir = home_dir.canonicalize()?;
-
-        // Paket directory
-        let mut paket_dir = config_dir.clone();
-        paket_dir.push("paket");
+        let config_dir = home_dir.join(".config").canonicalize()?;
 
         // Fish directory
-        config_dir.push("fish");
-        let fish_dir = config_dir.canonicalize()?;
+        let fish_dir = config_dir.join("fish").canonicalize()?;
+
+        // Paket directory
+        let paket_dir = config_dir.join("paket");
 
         if !paket_dir.exists() {
             fs::create_dir_all(&paket_dir)?;
@@ -49,6 +49,7 @@ impl Paket {
         Ok((fish_dir, paket_dir))
     }
 
+    /// Just run the `Paket` application.
     pub fn run(&self) -> Result {
         App::run(&self)?;
 
@@ -57,8 +58,7 @@ impl Paket {
 
     /// Verify if a package directory path exists and it's not empty.
     pub fn pkg_exists(&self, pkg_name: &str) -> bool {
-        let mut pkg_dir = self.paket_dir.clone();
-        pkg_dir.push(pkg_name);
+        let pkg_dir = self.paket_dir.join(pkg_name);
         pkg_dir.exists() && pkg_dir.is_dir() && pkg_dir.read_dir().unwrap().next().is_some()
     }
 }
