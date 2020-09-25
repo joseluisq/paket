@@ -1,17 +1,17 @@
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::{Command as StdCommand, Stdio};
 
 use crate::result::Result;
 
 /// Wrapper around `std::process::Command`
-pub struct Cmd {
-    inner: Command,
+pub struct Command {
+    inner: StdCommand,
 }
 
-impl Cmd {
+impl Command {
     /// Creates a new instance of `Cmd`
     pub fn new(exec_name: &str, cwd: &PathBuf) -> Self {
-        let mut inner = Command::new(exec_name);
+        let mut inner = StdCommand::new(exec_name);
         inner.current_dir(cwd);
         inner.stdin(Stdio::null());
         inner.stdout(Stdio::piped());

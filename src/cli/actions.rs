@@ -1,7 +1,7 @@
 use std::fs;
 
 use crate::git::Git;
-use crate::helpers;
+use crate::helpers::{file as file_helper, Command};
 use crate::paket::Paket;
 use crate::pkg::validator::PkgValidator;
 use crate::result::Result;
@@ -24,7 +24,7 @@ impl<'a> Actions<'a> {
         let pkg_tag = Some(pkgv.pkg_tag.as_ref());
 
         let branch_tag = pkg_tag.unwrap_or("");
-        println!("installing package `{}{}`", &pkg_name, branch_tag);
+        println!("installing package `{}@{}`", &pkg_name, branch_tag);
 
         if self.pk.pkg_exists(pkg_name) {
             bail!(
@@ -59,7 +59,7 @@ impl<'a> Actions<'a> {
 
                 if path.is_dir() {
                     // Check for valid allowed directories
-                    if helpers::file::has_any_suffixes(&path, &path_suffixes) {
+                    if file_helper::has_path_any_suffixes(&path, &path_suffixes) {
                         stack_paths.push(path);
                     }
                     continue;
@@ -67,7 +67,7 @@ impl<'a> Actions<'a> {
 
                 // Check for files with allowed directory parents
                 if let Some(parent) = path.parent() {
-                    if !helpers::file::has_any_suffixes(&parent, &path_suffixes) {
+                    if !file_helper::has_path_any_suffixes(&parent, &path_suffixes) {
                         continue;
                     }
 
@@ -79,7 +79,7 @@ impl<'a> Actions<'a> {
                         fish_dir = &functions;
                     }
 
-                    // TODO: copy the .fish files to their corresponding dirs
+                    // copy the .fish files to their corresponding dirs
                     match path.file_name() {
                         Some(filename) => {
                             let is_fish_file = match filename.to_str() {
@@ -102,7 +102,7 @@ impl<'a> Actions<'a> {
 
         // TODO: Invoke Fish shell events
         let cwd = std::env::current_dir()?;
-        let mut cmd = helpers::cmd::Cmd::new("fish", &cwd);
+        let mut cmd = Command::new("fish", &cwd);
         cmd.arg("-v");
         let out = cmd.execute()?;
 

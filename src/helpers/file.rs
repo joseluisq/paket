@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-pub fn has_any_suffixes<P: AsRef<Path>>(path: P, suffixes: &[&str]) -> bool
+pub fn has_path_any_suffixes<P: AsRef<Path>>(path: P, suffixes: &[&str]) -> bool
 where
     PathBuf: From<P>,
 {

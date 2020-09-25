@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::helpers;
+use crate::helpers::Command;
 use crate::result::Result;
 
 pub struct Git {
@@ -22,11 +22,9 @@ impl Git {
     }
 
     fn get_remote_endpoint(user_repo_name: &str) -> String {
-        // TODO: GitHub support for now
-        let mut origin = String::from("https://github.com/");
-        origin.push_str(user_repo_name);
-        origin.push_str(".git");
-        origin
+        // TODO: support more providers
+        // GitHub support for now
+        ["https://github.com/", user_repo_name, ".git"].concat()
     }
 
     fn exec_name(&self) -> &'static str {
@@ -36,18 +34,15 @@ impl Git {
     pub fn clone(&self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
         let endpoint = Git::get_remote_endpoint(user_repo_name);
 
-        let mut out_dir = self.base_dir.clone();
-        out_dir.push(user_repo_name);
-
+        let out_dir = self.base_dir.join(user_repo_name);
         if !out_dir.exists() {
             fs::create_dir_all(&out_dir)?;
         }
 
         let branch_tag = branch_tag.unwrap_or("master");
-        let mut branch_str = String::from("--branch=");
-        branch_str.push_str(branch_tag);
+        let branch_str = ["--branch=", branch_tag].concat();
 
-        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &self.current_dir);
+        let mut cmd = Command::new(self.exec_name(), &self.current_dir);
         cmd.arg("clone")
             .arg("--depth=1")
             .arg(branch_str)
@@ -60,7 +55,7 @@ impl Git {
         let branch_tag = branch_tag.unwrap_or("master");
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &cwd);
+        let mut cmd = Command::new(self.exec_name(), &cwd);
         cmd.arg("fetch")
             .arg("--depth=1")
             .arg("origin")
@@ -76,7 +71,7 @@ impl Git {
         let branch = branch.unwrap();
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &cwd);
+        let mut cmd = Command::new(self.exec_name(), &cwd);
         cmd.arg("checkout").arg(branch);
         cmd.execute()
     }
@@ -87,7 +82,7 @@ impl Git {
             bail!("repository `{}` was not found", user_repo_name);
         }
 
-        let mut cmd = helpers::cmd::Cmd::new(self.exec_name(), &repo_dir);
+        let mut cmd = Command::new(self.exec_name(), &repo_dir);
         cmd.arg("pull").arg("origin").arg("master");
         cmd.execute()
     }
