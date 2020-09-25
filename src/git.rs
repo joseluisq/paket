@@ -42,25 +42,25 @@ impl Git {
         let branch_tag = branch_tag.unwrap_or("master");
         let branch_str = ["--branch=", branch_tag].concat();
 
-        let mut cmd = Command::new(self.exec_name(), &self.current_dir);
-        cmd.arg("clone")
+        Command::new(self.exec_name(), &self.current_dir)
+            .arg("clone")
             .arg("--depth=1")
             .arg(branch_str)
             .arg(&endpoint)
-            .arg(out_dir);
-        cmd.execute()
+            .arg(out_dir)
+            .execute()
     }
 
     pub fn fetch(&mut self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
         let branch_tag = branch_tag.unwrap_or("master");
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        let mut cmd = Command::new(self.exec_name(), &cwd);
-        cmd.arg("fetch")
+        Command::new(self.exec_name(), &cwd)
+            .arg("fetch")
             .arg("--depth=1")
             .arg("origin")
-            .arg(branch_tag);
-        cmd.execute()
+            .arg(branch_tag)
+            .execute()
     }
 
     pub fn checkout(&mut self, user_repo_name: &str, branch: Option<&str>) -> Result<String> {
@@ -71,9 +71,10 @@ impl Git {
         let branch = branch.unwrap();
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        let mut cmd = Command::new(self.exec_name(), &cwd);
-        cmd.arg("checkout").arg(branch);
-        cmd.execute()
+        Command::new(self.exec_name(), &cwd)
+            .arg("checkout")
+            .arg(branch)
+            .execute()
     }
 
     pub fn pull(&mut self, user_repo_name: &str) -> Result<String> {
@@ -82,8 +83,10 @@ impl Git {
             bail!("repository `{}` was not found", user_repo_name);
         }
 
-        let mut cmd = Command::new(self.exec_name(), &repo_dir);
-        cmd.arg("pull").arg("origin").arg("master");
-        cmd.execute()
+        Command::new(self.exec_name(), &repo_dir)
+            .arg("pull")
+            .arg("origin")
+            .arg("master")
+            .execute()
     }
 }

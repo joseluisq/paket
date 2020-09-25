@@ -17,7 +17,7 @@ impl<'a> Actions<'a> {
         Ok(Self { pk, git })
     }
 
-    /// Command action to install a new package
+    /// Command action to install a new package and invoke a `paket_install` Fish shell event.
     pub fn install(self, pkg_name: &str) -> Result {
         let pkgv = PkgValidator::new(&pkg_name)?;
         let pkg_name = &pkgv.get_user_pkg_name();
@@ -53,6 +53,7 @@ impl<'a> Actions<'a> {
 
         // TODO: Detect and read the `paket.toml` file
 
+        // TODO: Move file copy process out to a new source file
         while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
@@ -100,15 +101,18 @@ impl<'a> Actions<'a> {
             }
         }
 
-        // TODO: Invoke Fish shell events
+        // Dispatch the Fish shell `paket_install` event
         let cwd = std::env::current_dir()?;
-        let mut cmd = Command::new("fish", &cwd);
-        cmd.arg("-v");
-        let out = cmd.execute()?;
+        let out = Command::new("fish", &cwd)
+            .arg("-c")
+            .arg("emit paket_install")
+            .execute()?;
 
-        println!("{}", out);
+        if !out.is_empty() {
+            println!("{}", out);
+        }
 
-        println!("package was installed successfully");
+        println!("package was installed successfully.");
 
         Ok(())
     }
@@ -132,9 +136,21 @@ impl<'a> Actions<'a> {
         Ok(())
     }
 
-    /// Command action to remove an existing package
+    /// Command action to remove an existing package and invoke a `paket_uninstall` Fish shell event.
     pub fn remove(&self, pkg_name: &str) -> Result {
+        // TODO: Remove a package
         println!("Remove: pkg {:?}", pkg_name);
+
+        // Dispatch the Fish shell `paket_uninstall` event
+        let cwd = std::env::current_dir()?;
+        let out = Command::new("fish", &cwd)
+            .arg("-c")
+            .arg("emit paket_uninstall")
+            .execute()?;
+
+        if !out.is_empty() {
+            println!("{}", out);
+        }
 
         Ok(())
     }
