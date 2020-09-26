@@ -5,37 +5,49 @@ use structopt::StructOpt;
 use crate::cli::{App, CommandOpts};
 use crate::result::Result;
 
+/// Defines directory paths used by `Paket`.
+pub struct PaketPaths {
+    pub config_dir: PathBuf,
+    pub fish_dir: PathBuf,
+    pub fish_snippets_dir: PathBuf,
+    pub fish_completions_dir: PathBuf,
+    pub fish_functions_dir: PathBuf,
+    pub paket_dir: PathBuf,
+}
+
 /// Packet is a package manager for the Fish shell.
 pub struct Paket {
-    pub fish_dir: PathBuf,
-    pub paket_dir: PathBuf,
+    pub paths: PaketPaths,
     pub opts: CommandOpts,
 }
 
 impl Paket {
     /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
-        let (fish_dir, paket_dir) = Self::configure()?;
+        // TODO: Check if Fish shell is installed and this tool is running on top
+        // For example using `echo $FISH_VERSION`
+        // See https://github.com/fish-shell/fish-shell/issues/374
+
+        let paths = Self::configure_paths()?;
         let opts = CommandOpts::from_args();
 
-        Ok(Self {
-            fish_dir,
-            paket_dir,
-            opts,
-        })
+        Ok(Self { paths, opts })
     }
 
     /// Configure directory paths used by `Paket`.
-    fn configure() -> Result<(PathBuf, PathBuf)> {
+    fn configure_paths() -> Result<PaketPaths> {
         let home_dir = dirs::home_dir()
-            .expect("Paket: config directory not found")
+            .expect("user config directory was not found")
             .canonicalize()?;
 
         // Config directory
         let config_dir = home_dir.join(".config").canonicalize()?;
 
-        // Fish directory
+        // Fish config directories
         let fish_dir = config_dir.join("fish").canonicalize()?;
+        let fish_snippets_dir = fish_dir.join("conf.d").canonicalize()?;
+        let fish_completions_dir = fish_dir.join("completions").canonicalize()?;
+        let fish_functions_dir = fish_dir.join("functions").canonicalize()?;
 
         // Paket directory
         let paket_dir = config_dir.join("paket");
@@ -46,7 +58,14 @@ impl Paket {
 
         let paket_dir = paket_dir.canonicalize()?;
 
-        Ok((fish_dir, paket_dir))
+        Ok(PaketPaths {
+            config_dir,
+            fish_dir,
+            fish_snippets_dir,
+            fish_completions_dir,
+            fish_functions_dir,
+            paket_dir,
+        })
     }
 
     /// Just run the `Paket` application.
@@ -58,7 +77,7 @@ impl Paket {
 
     /// Verify if a package directory path exists and it's not empty.
     pub fn pkg_exists(&self, pkg_name: &str) -> bool {
-        let pkg_dir = self.paket_dir.join(pkg_name);
+        let pkg_dir = self.paths.paket_dir.join(pkg_name);
         pkg_dir.exists() && pkg_dir.is_dir() && pkg_dir.read_dir().unwrap().next().is_some()
     }
 }

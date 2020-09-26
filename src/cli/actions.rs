@@ -13,40 +13,19 @@ pub struct Actions<'a> {
 
 impl<'a> Actions<'a> {
     pub fn new(pk: &'a Paket) -> Result<Self> {
-        let git = Git::new(pk.paket_dir.clone())?;
+        let git = Git::new(pk.paths.paket_dir.clone())?;
         Ok(Self { pk, git })
     }
 
-    /// Command action to install a new package and invoke a `paket_install` Fish shell event.
-    pub fn install(self, pkg_name: &str) -> Result {
-        let pkgv = PkgValidator::new(&pkg_name)?;
-        let pkg_name = &pkgv.get_user_pkg_name();
-        let pkg_tag = Some(pkgv.pkg_tag.as_ref());
-
-        let branch_tag = pkg_tag.unwrap_or("");
-        println!("installing package `{}@{}`", &pkg_name, branch_tag);
-
-        if self.pk.pkg_exists(pkg_name) {
-            bail!(
-                "package `{}` is already installed. Try to use the `up` command to upgrade it.",
-                pkg_name
-            );
-        }
-
-        self.git.clone(pkg_name, pkg_tag)?;
-
-        // Process Fish shell package structure
-        let pkg_dir = self.git.base_dir.join(&pkg_name);
-        if !self.pk.pkg_exists(pkg_name) {
-            bail!("package `{}` was not cloned with success.", pkg_name);
-        }
-
+    // Copy a Fish package source files to their corresponding directories
+    pub fn copy_fish_pkg_source_files(&self, pkg_dir: &std::path::PathBuf) -> Result {
         // Copy `configuration snippets` -> conf.d/*.fish
         // Copy `completions` -> completions/*.fish
         // Copy `functions` -> functions/*.fish
-        let snippets = self.pk.fish_dir.join("conf.d").canonicalize()?;
-        let completions = self.pk.fish_dir.join("completions").canonicalize()?;
-        let functions = self.pk.fish_dir.join("functions").canonicalize()?;
+        let pkg_dir = pkg_dir.clone();
+        let snippets_dir = &self.pk.paths.fish_snippets_dir;
+        let completions_dir = &self.pk.paths.fish_completions_dir;
+        let functions_dir = &self.pk.paths.fish_functions_dir;
 
         let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
@@ -72,12 +51,12 @@ impl<'a> Actions<'a> {
                         continue;
                     }
 
-                    let mut fish_dir = &snippets;
+                    let mut fish_dir = &snippets_dir;
                     if parent.ends_with("completions") {
-                        fish_dir = &completions;
+                        fish_dir = &completions_dir;
                     }
                     if parent.ends_with("functions") {
-                        fish_dir = &functions;
+                        fish_dir = &functions_dir;
                     }
 
                     // copy the .fish files to their corresponding dirs
@@ -101,6 +80,35 @@ impl<'a> Actions<'a> {
             }
         }
 
+        Ok(())
+    }
+
+    /// Command action to install a new package and invoke a `paket_install` Fish shell event.
+    pub fn install(&self, pkg_name: &str) -> Result {
+        let pkgv = PkgValidator::new(&pkg_name)?;
+        let pkg_name = &pkgv.get_user_pkg_name();
+        let pkg_tag = Some(pkgv.pkg_tag.as_ref());
+
+        let branch_tag = pkg_tag.unwrap_or("");
+        println!("Installing package `{}@{}`...", &pkg_name, branch_tag);
+
+        if self.pk.pkg_exists(pkg_name) {
+            bail!(
+                "package `{}` is already installed. Try to use the `up` command to upgrade it.",
+                pkg_name
+            );
+        }
+
+        self.git.clone(pkg_name, pkg_tag)?;
+
+        // Process Fish shell package structure
+        let pkg_dir = self.git.base_dir.join(&pkg_name);
+        if !self.pk.pkg_exists(pkg_name) {
+            bail!("package `{}` was not cloned with success.", pkg_name);
+        }
+
+        self.copy_fish_pkg_source_files(&pkg_dir)?;
+
         // Dispatch the Fish shell `paket_install` event
         let cwd = std::env::current_dir()?;
         let out = Command::new("fish", &cwd)
@@ -112,7 +120,9 @@ impl<'a> Actions<'a> {
             println!("{}", out);
         }
 
-        println!("package was installed successfully.");
+        println!("Package was installed successfully.");
+        println!("Now reload your current Fish shell session or try:");
+        println!("source ~/.config/fish/config.fish");
 
         Ok(())
     }
