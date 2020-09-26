@@ -4,7 +4,7 @@ use crate::git::Git;
 use crate::helpers::{file as file_helper, Command};
 use crate::paket::Paket;
 use crate::pkg::validator::PkgValidator;
-use crate::result::Result;
+use crate::result::{Context, Result};
 
 pub struct Actions<'a> {
     pk: &'a Paket,
@@ -108,6 +108,7 @@ impl<'a> Actions<'a> {
         }
 
         self.copy_fish_pkg_source_files(&pkg_dir)?;
+        // TODO: make sure of copy additional files based on `paket.toml`
 
         // Dispatch the Fish shell `paket_install` event
         let cwd = std::env::current_dir()?;
@@ -133,6 +134,12 @@ impl<'a> Actions<'a> {
         let pkg_name = &pkgv.get_user_pkg_name();
         let pkg_tag = Some(pkgv.pkg_tag.as_ref());
 
+        let branch_tag = pkg_tag.unwrap_or("");
+        println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
+
+        // TODO: make sure to remove installed source files tracking the current version files first
+        // TODO: make sure of remove additional files based on `paket.toml`
+
         if !self.pk.pkg_exists(pkg_name) {
             bail!(
                 "package `{}` is not installed. Try to use the `add` command to install it first.",
@@ -142,6 +149,20 @@ impl<'a> Actions<'a> {
 
         self.git.fetch(pkg_name, pkg_tag)?;
         self.git.checkout(pkg_name, Some("FETCH_HEAD"))?;
+
+        // Process Fish shell package structure
+        let pkg_dir = self
+            .git
+            .base_dir
+            .join(&pkg_name)
+            .canonicalize()
+            .with_context(|| format!("package `{}` was not updated properly.", pkg_name))?;
+
+        self.copy_fish_pkg_source_files(&pkg_dir)?;
+
+        println!("Package was updated successfully.");
+        println!("Now reload your current Fish shell session or try:");
+        println!("source ~/.config/fish/config.fish");
 
         Ok(())
     }

@@ -15,4 +15,8 @@ keywords = [
     "github"
 ]
 
+include = [
+    ".gitnow"
+]
+
 [dependencies]
