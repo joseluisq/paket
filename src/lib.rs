@@ -2,6 +2,9 @@
 extern crate anyhow;
 
 #[macro_use]
+extern crate serde;
+
+#[macro_use]
 pub mod result;
 
 pub mod cli;
