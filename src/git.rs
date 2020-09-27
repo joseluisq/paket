@@ -4,8 +4,11 @@ use std::path::{Path, PathBuf};
 use crate::helpers::Command;
 use crate::result::Result;
 
+/// Git commands set interface.
 pub struct Git {
+    /// Base directory is usually current parent directory.
     pub base_dir: PathBuf,
+    /// Current directory when a command is performed.
     pub current_dir: PathBuf,
 }
 
@@ -31,6 +34,7 @@ impl Git {
         "git"
     }
 
+    /// Clone a Git repository.
     pub fn clone(&self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
         let endpoint = Git::get_remote_endpoint(user_repo_name);
 
@@ -51,6 +55,7 @@ impl Git {
             .execute()
     }
 
+    /// Fetch a Git branch or tag.
     pub fn fetch(&mut self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
         let branch_tag = branch_tag.unwrap_or("master");
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
@@ -63,6 +68,7 @@ impl Git {
             .execute()
     }
 
+    /// Checkout to an specific Git branch or tag.
     pub fn checkout(&mut self, user_repo_name: &str, branch: Option<&str>) -> Result<String> {
         if branch.is_none() {
             bail!("provide a branch to switch to.");
@@ -77,6 +83,7 @@ impl Git {
             .execute()
     }
 
+    /// Pull Git repository changes.
     pub fn pull(&mut self, user_repo_name: &str) -> Result<String> {
         let repo_dir = self.base_dir.join(user_repo_name);
         if !repo_dir.exists() {

@@ -190,22 +190,24 @@ impl<'a> Actions<'a> {
         // Process Fish shell package structure
         let pkg_dir = self.git.base_dir.join(&pkg_name);
         if !self.pk.pkg_exists(pkg_name) {
-            bail!("package `{}` is not installed.", pkg_name);
+            bail!(
+                "package `{}` is not installed or was already removed.",
+                pkg_name
+            );
         }
 
-        let mut removed = false;
+        let pkg_dir = pkg_dir.canonicalize()?;
+
         self.read_pkg_dir(&pkg_dir, |_, dest_path| {
             if dest_path.exists() {
                 fs::remove_file(dest_path)?;
-                removed = true;
             }
             Ok(())
         })?;
-        // TODO: make sure of copy additional files based on `paket.toml`
+        // TODO: make sure of remove additional files based on `paket.toml`
 
-        if !removed {
-            bail!("package `{}` was already removed.", pkg_name);
-        }
+        // NOTE: For now just remove the package Git repository as well
+        fs::remove_dir_all(pkg_dir)?;
 
         // Dispatch the Fish shell `paket_uninstall` event
         let cwd = std::env::current_dir()?;
