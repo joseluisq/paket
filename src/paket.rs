@@ -7,17 +7,25 @@ use crate::result::Result;
 
 /// Defines directory paths used by `Paket`.
 pub struct PaketPaths {
+    /// User configuration directory.
     pub config_dir: PathBuf,
+    /// Fish configuration directory.
     pub fish_dir: PathBuf,
+    /// Fish snippets directory.
     pub fish_snippets_dir: PathBuf,
+    /// Fish completions directory.
     pub fish_completions_dir: PathBuf,
+    /// Fish functions directory.
     pub fish_functions_dir: PathBuf,
+    /// Paket config directory.
     pub paket_dir: PathBuf,
 }
 
 /// Packet is a package manager for the Fish shell.
 pub struct Paket {
+    /// Contain directory paths used by `Paket`.
     pub paths: PaketPaths,
+    /// Contain `Paket` command options.
     pub opts: CommandOpts,
 }
 

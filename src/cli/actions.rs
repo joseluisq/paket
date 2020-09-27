@@ -1,27 +1,34 @@
 use std::fs;
+use std::path::PathBuf;
 
 use crate::git::Git;
 use crate::helpers::{file as file_helper, Command};
 use crate::paket::Paket;
-use crate::pkg::validator::PkgValidator;
+use crate::pkg::fmt::PkgNameFmt;
 use crate::result::{Context, Result};
 
+/// Define actions for every `Paket` command.
 pub struct Actions<'a> {
     pk: &'a Paket,
     git: Git,
 }
 
 impl<'a> Actions<'a> {
+    /// Create a new `Action` instance based on `Paket` object.
     pub fn new(pk: &'a Paket) -> Result<Self> {
         let git = Git::new(pk.paths.paket_dir.clone())?;
         Ok(Self { pk, git })
     }
 
-    // Copy a Fish package source files to their corresponding directories
-    pub fn copy_fish_pkg_source_files(&self, pkg_dir: &std::path::PathBuf) -> Result {
-        // Copy `configuration snippets` -> conf.d/*.fish
-        // Copy `completions` -> completions/*.fish
-        // Copy `functions` -> functions/*.fish
+    /// Read a Fish package directory and call a function passing per every
+    /// file path read along with its equivalent destination path.
+    pub fn read_pkg_dir<F>(&self, pkg_dir: &PathBuf, mut func: F) -> Result
+    where
+        F: FnMut(&PathBuf, &PathBuf) -> Result,
+    {
+        // `configuration snippets` -> conf.d/*.fish
+        // `completions` -> completions/*.fish
+        // `functions` -> functions/*.fish
         let pkg_dir = pkg_dir.clone();
         let snippets_dir = &self.pk.paths.fish_snippets_dir;
         let completions_dir = &self.pk.paths.fish_completions_dir;
@@ -30,9 +37,8 @@ impl<'a> Actions<'a> {
         let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
-        // TODO: Detect and read the `paket.toml` file
+        // TODO: Detect and read the `paket.toml` file and read `include` section
 
-        // TODO: Move file copy process out to a new source file
         while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
@@ -59,7 +65,7 @@ impl<'a> Actions<'a> {
                         fish_dir = &functions_dir;
                     }
 
-                    // copy the .fish files to their corresponding dirs
+                    // call callback function with a source and destination paths
                     match path.file_name() {
                         Some(filename) => {
                             let is_fish_file = match filename.to_str() {
@@ -69,7 +75,8 @@ impl<'a> Actions<'a> {
 
                             if is_fish_file {
                                 let dest_path = fish_dir.join(filename);
-                                fs::copy(&path, &dest_path)?;
+
+                                func(&path, &dest_path)?;
                             }
                         }
                         None => {
@@ -85,9 +92,9 @@ impl<'a> Actions<'a> {
 
     /// Command action to install a new package and invoke a `paket_install` Fish shell event.
     pub fn install(&self, pkg_name: &str) -> Result {
-        let pkgv = PkgValidator::new(&pkg_name)?;
-        let pkg_name = &pkgv.get_user_pkg_name();
-        let pkg_tag = Some(pkgv.pkg_tag.as_ref());
+        let pkgfmt = PkgNameFmt::from(&pkg_name)?;
+        let pkg_name = &pkgfmt.get_short_name();
+        let pkg_tag = Some(pkgfmt.pkg_tag.as_ref());
 
         let branch_tag = pkg_tag.unwrap_or("");
         println!("Installing package `{}@{}`...", &pkg_name, branch_tag);
@@ -107,7 +114,10 @@ impl<'a> Actions<'a> {
             bail!("package `{}` was not cloned with success.", pkg_name);
         }
 
-        self.copy_fish_pkg_source_files(&pkg_dir)?;
+        self.read_pkg_dir(&pkg_dir, |src_path, dest_path| {
+            fs::copy(src_path, dest_path)?;
+            Ok(())
+        })?;
         // TODO: make sure of copy additional files based on `paket.toml`
 
         // Dispatch the Fish shell `paket_install` event
@@ -130,9 +140,9 @@ impl<'a> Actions<'a> {
 
     /// Command action to update an existing package
     pub fn update(&mut self, pkg_name: &str) -> Result {
-        let pkgv = PkgValidator::new(&pkg_name)?;
-        let pkg_name = &pkgv.get_user_pkg_name();
-        let pkg_tag = Some(pkgv.pkg_tag.as_ref());
+        let pkgfmt = PkgNameFmt::from(&pkg_name)?;
+        let pkg_name = &pkgfmt.get_short_name();
+        let pkg_tag = Some(pkgfmt.pkg_tag.as_ref());
 
         let branch_tag = pkg_tag.unwrap_or("");
         println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
@@ -158,7 +168,10 @@ impl<'a> Actions<'a> {
             .canonicalize()
             .with_context(|| format!("package `{}` was not updated properly.", pkg_name))?;
 
-        self.copy_fish_pkg_source_files(&pkg_dir)?;
+        self.read_pkg_dir(&pkg_dir, |src_path, dest_path| {
+            fs::copy(src_path, dest_path)?;
+            Ok(())
+        })?;
 
         println!("Package was updated successfully.");
         println!("Now reload your current Fish shell session or try:");
@@ -169,8 +182,30 @@ impl<'a> Actions<'a> {
 
     /// Command action to remove an existing package and invoke a `paket_uninstall` Fish shell event.
     pub fn remove(&self, pkg_name: &str) -> Result {
-        // TODO: Remove a package
-        println!("Remove: pkg {:?}", pkg_name);
+        let pkgfmt = PkgNameFmt::from(&pkg_name)?;
+        let pkg_name = &pkgfmt.get_short_name();
+
+        println!("Removing package `{}`...", &pkg_name);
+
+        // Process Fish shell package structure
+        let pkg_dir = self.git.base_dir.join(&pkg_name);
+        if !self.pk.pkg_exists(pkg_name) {
+            bail!("package `{}` is not installed.", pkg_name);
+        }
+
+        let mut removed = false;
+        self.read_pkg_dir(&pkg_dir, |_, dest_path| {
+            if dest_path.exists() {
+                fs::remove_file(dest_path)?;
+                removed = true;
+            }
+            Ok(())
+        })?;
+        // TODO: make sure of copy additional files based on `paket.toml`
+
+        if !removed {
+            bail!("package `{}` was already removed.", pkg_name);
+        }
 
         // Dispatch the Fish shell `paket_uninstall` event
         let cwd = std::env::current_dir()?;
@@ -182,6 +217,10 @@ impl<'a> Actions<'a> {
         if !out.is_empty() {
             println!("{}", out);
         }
+
+        println!("Package was removed successfully.");
+        println!("Now reload your current Fish shell session or try:");
+        println!("source ~/.config/fish/config.fish");
 
         Ok(())
     }

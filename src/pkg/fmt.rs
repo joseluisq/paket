@@ -1,16 +1,19 @@
 use crate::result::Result;
 
-/// Validate a package name format. Format: username/package_name@(tag_name|branch_name)
-pub struct PkgValidator {
-    pub username: String,
+/// Defaines the package name format based on a fomatted package name string.
+pub struct PkgNameFmt {
+    /// Contain the package user name.
+    pub user_name: String,
+    /// Contain the package name.
     pub pkg_name: String,
+    /// Contain the package version name (Git branch or tag).
     pub pkg_tag: String,
 }
 
-impl<'a> PkgValidator {
-    /// Return a `PkgValidator` instance but making sure that current package name format is valid.
+impl<'a> PkgNameFmt {
+    /// Return a `PkgNameFmt` instance but making sure that current package name format is valid.
     /// Format: username/package_name@(tag_name|branch_name)
-    pub fn new(pkg_name: &'a str) -> Result<Self> {
+    pub fn from(pkg_name: &'a str) -> Result<Self> {
         if pkg_name.is_empty() {
             bail!("provide a package name.");
         }
@@ -39,14 +42,14 @@ impl<'a> PkgValidator {
         }
 
         Ok(Self {
-            username,
+            user_name: username,
             pkg_name,
             pkg_tag,
         })
     }
 
-    /// Return the username and package name concatenated. E.g username/package_name
-    pub fn get_user_pkg_name(&self) -> String {
-        [&self.username, "/", &self.pkg_name].concat()
+    /// Return the user and package name concatenated. E.g `username/package_name`.
+    pub fn get_short_name(&self) -> String {
+        [&self.user_name, "/", &self.pkg_name].concat()
     }
 }
