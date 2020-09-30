@@ -198,17 +198,6 @@ impl<'a> Actions<'a> {
 
         let pkg_dir = pkg_dir.canonicalize()?;
 
-        self.read_pkg_dir(&pkg_dir, |_, dest_path| {
-            if dest_path.exists() {
-                fs::remove_file(dest_path)?;
-            }
-            Ok(())
-        })?;
-        // TODO: make sure of remove additional files based on `paket.toml`
-
-        // NOTE: For now just remove the package Git repository as well
-        fs::remove_dir_all(pkg_dir)?;
-
         // Dispatch the Fish shell `paket_uninstall` event
         let cwd = std::env::current_dir()?;
         let out = Command::new("fish", &cwd)
@@ -219,6 +208,17 @@ impl<'a> Actions<'a> {
         if !out.is_empty() {
             println!("{}", out);
         }
+
+        self.read_pkg_dir(&pkg_dir, |_, dest_path| {
+            if dest_path.exists() {
+                fs::remove_file(dest_path)?;
+            }
+            Ok(())
+        })?;
+        // TODO: make sure of remove additional files based on `paket.toml`
+
+        // NOTE: For now just remove the package Git repository as well
+        fs::remove_dir_all(pkg_dir)?;
 
         println!("Package was removed successfully.");
         println!("Now reload your current Fish shell session or try:");
