@@ -49,7 +49,7 @@ Because its and an experimental repository some key functionalies are missing ri
 - [x] Add command.
 - [x] Update command.
 - [x] Remove command.
-- [x] Dispatch Fish shell `paket_install` and `paket_uninstall` events.
+- [x] Dispatch Fish shell `paket_install`, `paket_update`, `paket_uninstall` events.
 - [ ] Add package file `paket.toml` support.
 - [ ] Add config file `~/paket.toml` support.
 - [ ] Dependencies support.

@@ -173,6 +173,17 @@ impl<'a> Actions<'a> {
             Ok(())
         })?;
 
+        // Dispatch the Fish shell `paket_update` event
+        let cwd = std::env::current_dir()?;
+        let out = Command::new("fish", &cwd)
+            .arg("-c")
+            .arg("emit paket_update")
+            .execute()?;
+
+        if !out.is_empty() {
+            println!("{}", out);
+        }
+
         println!("Package was updated successfully.");
         println!("Now reload your current Fish shell session or try:");
         println!("source ~/.config/fish/config.fish");
