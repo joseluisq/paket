@@ -53,6 +53,7 @@ Because its and an experimental repository some key functionalies are missing ri
 - [ ] Add package file `paket.toml` support.
 - [ ] Add config file `~/paket.toml` support.
 - [ ] Dependencies support.
+- [ ] Ability to install package from local.
 - [ ] Add support for Bitbucket, Gitlab, etc.
 - [ ] Prevent unnecessary clones for same versions (tags)
 - [ ] ?

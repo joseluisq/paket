@@ -9,14 +9,14 @@ pub mod conf;
 pub use conf::*;
 
 pub fn read_pkg_file(path: &Path) -> Result<toml::Value> {
-    let toml = file::read(path)?;
+    let toml_str = file::read(path)?;
 
-    let first_error = match toml.parse() {
+    let first_error = match toml_str.parse() {
         Ok(ret) => return Ok(ret),
         Err(e) => e,
     };
 
-    let mut second_parser = toml::de::Deserializer::new(&toml);
+    let mut second_parser = toml::de::Deserializer::new(&toml_str);
     second_parser.set_require_newline_after_table(false);
     if let Ok(ret) = toml::Value::deserialize(&mut second_parser) {
         let msg = format!(

@@ -1,10 +1,11 @@
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::git::Git;
-use crate::helpers::{file as file_helper, Command};
+use crate::helpers::{file as helper_file, Command};
 use crate::paket::Paket;
-use crate::pkg::fmt::PkgNameFmt;
+use crate::pkg::{conf, fmt::PkgNameFmt};
 use crate::result::{Context, Result};
 
 /// Define actions for every `Paket` command.
@@ -22,14 +23,55 @@ impl<'a> Actions<'a> {
 
     /// Read a Fish package directory and call a function passing per every
     /// file path read along with its equivalent destination path.
-    pub fn read_pkg_dir<F>(&self, pkg_dir: &PathBuf, mut func: F) -> Result
+    pub fn read_pkg_dir<F>(&self, pkg_dir: &PathBuf, pkg_name: &str, mut func: F) -> Result
     where
         F: FnMut(&PathBuf, &PathBuf) -> Result,
     {
+        let pkg_dir = pkg_dir.clone();
+        let pkg_toml_path = pkg_dir.join("paket.toml").canonicalize().with_context(|| {
+            format!(
+                "`paket.toml` file was not found on package `{}` or is not accessible.",
+                pkg_name
+            )
+        })?;
+
+        // DEV: enable this just for testing during development
+        // let pkg_toml_path = PathBuf::from("./src/pkg/conf/paket.toml")
+        //     .canonicalize()
+        //     .with_context(|| {
+        //         format!(
+        //             "`paket.toml` file was not found on package `{}` or is not accessible.",
+        //             pkg_name
+        //         )
+        //     })?;
+
+        // Detect and read the `paket.toml` file
+        let toml = conf::read_pkg_file(&pkg_toml_path)?;
+        let mut unused = BTreeSet::new();
+        let manifest: conf::TomlManifest = serde_ignored::deserialize(toml, |path| {
+            let mut key = String::new();
+            helper_file::stringify(&mut key, &path);
+            unused.insert(key);
+        })?;
+
+        for key in unused {
+            println!("unused manifest key: {}", key);
+        }
+
+        // Read `package` toml section
+        let toml_pkg = if manifest.package.is_some() {
+            manifest.package.unwrap()
+        } else {
+            bail!("`paket.toml` file is empty or can not be read.")
+        };
+
+        // Read `include` toml property of `package` section
+        let _ = &toml_pkg.include.unwrap_or(vec![]);
+        // TODO: support Git glob-like file's reading
+
         // `configuration snippets` -> conf.d/*.fish
         // `completions` -> completions/*.fish
         // `functions` -> functions/*.fish
-        let pkg_dir = pkg_dir.clone();
         let snippets_dir = &self.pk.paths.fish_snippets_dir;
         let completions_dir = &self.pk.paths.fish_completions_dir;
         let functions_dir = &self.pk.paths.fish_functions_dir;
@@ -37,15 +79,13 @@ impl<'a> Actions<'a> {
         let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
-        // TODO: Detect and read the `paket.toml` file and read `include` section
-
         while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
 
                 if path.is_dir() {
                     // Check for valid allowed directories
-                    if file_helper::has_path_any_suffixes(&path, &path_suffixes) {
+                    if helper_file::has_path_any_suffixes(&path, &path_suffixes) {
                         stack_paths.push(path);
                     }
                     continue;
@@ -53,11 +93,11 @@ impl<'a> Actions<'a> {
 
                 // Check for files with allowed directory parents
                 if let Some(parent) = path.parent() {
-                    if !file_helper::has_path_any_suffixes(&parent, &path_suffixes) {
+                    if !helper_file::has_path_any_suffixes(&parent, &path_suffixes) {
                         continue;
                     }
 
-                    let mut fish_dir = &snippets_dir;
+                    let mut fish_dir = snippets_dir;
                     if parent.ends_with("completions") {
                         fish_dir = &completions_dir;
                     }
@@ -114,7 +154,7 @@ impl<'a> Actions<'a> {
             bail!("package `{}` was not cloned with success.", pkg_name);
         }
 
-        self.read_pkg_dir(&pkg_dir, |src_path, dest_path| {
+        self.read_pkg_dir(&pkg_dir, &pkg_name, |src_path, dest_path| {
             fs::copy(src_path, dest_path)?;
             Ok(())
         })?;
@@ -147,8 +187,8 @@ impl<'a> Actions<'a> {
         let branch_tag = pkg_tag.unwrap_or("");
         println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
 
-        // TODO: make sure to remove installed source files tracking the current version files first
-        // TODO: make sure of remove additional files based on `paket.toml`
+        // TODO: make sure to update installed source files tracking the current version files first
+        // TODO: make sure of update additional files based on `paket.toml`
 
         if !self.pk.pkg_exists(pkg_name) {
             bail!(
@@ -168,7 +208,7 @@ impl<'a> Actions<'a> {
             .canonicalize()
             .with_context(|| format!("package `{}` was not updated properly.", pkg_name))?;
 
-        self.read_pkg_dir(&pkg_dir, |src_path, dest_path| {
+        self.read_pkg_dir(&pkg_dir, &pkg_name, |src_path, dest_path| {
             fs::copy(src_path, dest_path)?;
             Ok(())
         })?;
@@ -220,7 +260,7 @@ impl<'a> Actions<'a> {
             println!("{}", out);
         }
 
-        self.read_pkg_dir(&pkg_dir, |_, dest_path| {
+        self.read_pkg_dir(&pkg_dir, &pkg_name, |_, dest_path| {
             if dest_path.exists() {
                 fs::remove_file(dest_path)?;
             }
