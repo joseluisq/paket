@@ -32,8 +32,10 @@ pub struct Paket {
 impl Paket {
     /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
-        // TODO: Check if Fish shell is installed and this tool is running on top
-        // For example using `echo $FISH_VERSION`
+        // TODO: Check if Git and Fish shell binaries are installed
+
+        // TODO: Check if this tool is running on top of a Fish shell session
+        // For example using `echo $FISH_VERSION` which is exclusive to Fish shell
         // See https://github.com/fish-shell/fish-shell/issues/374
 
         let paths = Self::configure_paths()?;
@@ -45,11 +47,17 @@ impl Paket {
     /// Configure directory paths used by `Paket`.
     fn configure_paths() -> Result<PaketPaths> {
         let home_dir = dirs::home_dir()
-            .expect("user config directory was not found")
+            .expect("user home directory was not found or is not accessible.")
             .canonicalize()?;
 
         // Config directory
-        let config_dir = home_dir.join(".config").canonicalize()?;
+        let config_dir = home_dir.join(".config");
+
+        if !config_dir.exists() {
+            fs::create_dir_all(&config_dir)?;
+        }
+
+        let config_dir = config_dir.canonicalize()?;
 
         // Fish config directories
         let fish_dir = config_dir.join("fish").canonicalize()?;

@@ -168,11 +168,11 @@ impl<'a> Actions<'a> {
             .execute()?;
 
         if !out.is_empty() {
-            println!("{}", out);
+            print!("{}", out);
         }
 
         println!("Package was installed successfully.");
-        println!("Now reload your current Fish shell session or try:");
+        println!("Now reload your current Fish shell session or source your config file:");
         println!("source ~/.config/fish/config.fish");
 
         Ok(())
@@ -221,11 +221,11 @@ impl<'a> Actions<'a> {
             .execute()?;
 
         if !out.is_empty() {
-            println!("{}", out);
+            print!("{}", out);
         }
 
         println!("Package was updated successfully.");
-        println!("Now reload your current Fish shell session or try:");
+        println!("Now reload your current Fish shell session or source your config file:");
         println!("source ~/.config/fish/config.fish");
 
         Ok(())
@@ -257,7 +257,7 @@ impl<'a> Actions<'a> {
             .execute()?;
 
         if !out.is_empty() {
-            println!("{}", out);
+            print!("{}", out);
         }
 
         self.read_pkg_dir(&pkg_dir, &pkg_name, |_, dest_path| {
@@ -272,7 +272,7 @@ impl<'a> Actions<'a> {
         fs::remove_dir_all(pkg_dir)?;
 
         println!("Package was removed successfully.");
-        println!("Now reload your current Fish shell session or try:");
+        println!("Now reload your current Fish shell session or source your config file:");
         println!("source ~/.config/fish/config.fish");
 
         Ok(())

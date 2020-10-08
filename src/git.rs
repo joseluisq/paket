@@ -25,7 +25,7 @@ impl Git {
     }
 
     fn get_remote_endpoint(user_repo_name: &str) -> String {
-        // TODO: support more providers
+        // TODO: support more Git host providers
         // GitHub support for now
         ["https://github.com/", user_repo_name, ".git"].concat()
     }
