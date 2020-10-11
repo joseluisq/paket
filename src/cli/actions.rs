@@ -79,7 +79,7 @@ impl<'a> Actions<'a> {
         let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
-        // NOTE: copy only files conteined on "conf.d", "completions" or "functions" directories
+        // NOTE: copy only files contained on "conf.d", "completions" or "functions" directories
         while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
@@ -171,7 +171,6 @@ impl<'a> Actions<'a> {
             fs::copy(src_path, dest_path)?;
             Ok(())
         })?;
-        // TODO: make sure of copy additional files based on `paket.toml`
 
         // Dispatch the Fish shell `paket_install` event
         let cwd = std::env::current_dir()?;
@@ -199,9 +198,6 @@ impl<'a> Actions<'a> {
 
         let branch_tag = pkg_tag.unwrap_or("");
         println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
-
-        // TODO: make sure to update installed source files tracking the current version files first
-        // TODO: make sure of update additional files based on `paket.toml`
 
         if !self.pk.pkg_exists(pkg_name) {
             bail!(
@@ -279,7 +275,6 @@ impl<'a> Actions<'a> {
             }
             Ok(())
         })?;
-        // TODO: make sure of remove additional files based on `paket.toml`
 
         // NOTE: For now just remove the package Git repository as well
         fs::remove_dir_all(pkg_dir)?;

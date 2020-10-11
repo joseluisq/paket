@@ -21,7 +21,7 @@ pub struct PaketPaths {
     pub paket_dir: PathBuf,
 }
 
-/// Packet is a package manager for the Fish shell.
+/// Paket is a package manager for the Fish shell.
 pub struct Paket {
     /// Contain directory paths used by `Paket`.
     pub paths: PaketPaths,

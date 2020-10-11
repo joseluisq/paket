@@ -1,4 +1,4 @@
-# Paket
+# Paket 📦
 
 > An experimental package manager for the [Fish shell](https://fishshell.com/). 🐠
 
@@ -10,8 +10,36 @@ This is an *experimental* Git-based *"package manager"* for Fish shell which is 
 - No registries. Git repositories instead.
 - Just uses the format: `username/package_name@(tag_name|branch_name)`
 - Tiny but ultra fast static binary powered by [Rust](https://www.rust-lang.org/).
-- Package file support (`paket.toml`).
-- Configation file support (`~/paket.toml`).
+- Package file support (`paket.toml`) to
+
+## Paket file 
+
+`paket.toml` sample file of [GitNow](https://github.com/joseluisq/gitnow) Fish plugin.
+
+```toml
+[package]
+name = "gitnow"
+version = "2.5.1"
+authors = ["Jose Quintana <git.io/joseluisq>"]
+license = "MIT OR Apache-2.0"
+description = "Speed up your Git workflow. 🐠"
+repository = "https://github.com/joseluisq/gitnow"
+keywords = [
+    "git",
+    "git-workflow",
+    "fish-shell",
+    "fish-packages",
+    "keybindings",
+    "bitbucket",
+    "github"
+]
+
+include = [
+    "conf.d/.gitnow"
+]
+
+[dependencies]
+```
 
 ## Usage
 
@@ -50,7 +78,7 @@ Because its and an experimental repository some key functionalies are missing ri
 - [x] Update command.
 - [x] Remove command.
 - [x] Dispatch Fish shell `paket_install`, `paket_update`, `paket_uninstall` events.
-- [ ] Add package file `paket.toml` support.
+- [x] Add package file `paket.toml` support.
 - [ ] Add config file `~/paket.toml` support.
 - [ ] Dependencies support.
 - [ ] Ability to install package from local.
