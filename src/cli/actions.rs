@@ -66,8 +66,8 @@ impl<'a> Actions<'a> {
         };
 
         // Read `include` toml property of `package` section
-        let _ = &toml_pkg.include.unwrap_or(vec![]);
-        // TODO: support Git glob-like file's reading
+        let pkg_include = &toml_pkg.include.unwrap_or(vec![]);
+        // TODO: support Git glob-like file's reading on `include` toml array. Plain file paths only for now.
 
         // `configuration snippets` -> conf.d/*.fish
         // `completions` -> completions/*.fish
@@ -79,6 +79,7 @@ impl<'a> Actions<'a> {
         let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
+        // NOTE: copy only files conteined on "conf.d", "completions" or "functions" directories
         while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
@@ -108,14 +109,26 @@ impl<'a> Actions<'a> {
                     // call callback function with a source and destination paths
                     match path.file_name() {
                         Some(filename) => {
-                            let is_fish_file = match filename.to_str() {
+                            let filename = filename.to_str();
+                            let is_fish_file = match filename {
                                 Some(f) => f.ends_with(".fish"),
                                 _ => false,
                             };
 
-                            if is_fish_file {
-                                let dest_path = fish_dir.join(filename);
+                            let dest_path = fish_dir.join(filename.unwrap());
 
+                            // Copy Fish shell files
+                            if is_fish_file {
+                                func(&path, &dest_path)?;
+                                continue;
+                            }
+
+                            // Try to copy included non Fish shell files
+                            if pkg_include.is_empty() {
+                                continue;
+                            }
+                            let is_included = pkg_include.iter().any(|f| path.ends_with(f));
+                            if is_included {
                                 func(&path, &dest_path)?;
                             }
                         }
