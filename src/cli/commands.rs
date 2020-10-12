@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 
-/// A experimental package manager for the Fish shell 📦
+/// A simple package manager for the Fish shell 📦
 #[derive(Debug, StructOpt)]
 pub struct CommandOpts {
     #[structopt(subcommand)]

@@ -21,8 +21,8 @@ impl<'a> Actions<'a> {
         Ok(Self { pk, git })
     }
 
-    /// Read a Fish package directory and call a function passing per every
-    /// file path read along with its equivalent destination path.
+    /// Read a Fish package directory and call a function passing a source file
+    /// path per every read along with its equivalent destination path.
     pub fn read_pkg_dir<F>(&self, pkg_dir: &PathBuf, pkg_name: &str, mut func: F) -> Result
     where
         F: FnMut(&PathBuf, &PathBuf) -> Result,
