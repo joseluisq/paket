@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
+use sysinfo::{ProcessExt, System, SystemExt};
 
 use crate::cli::{App, CommandOpts};
-use crate::helpers::Command;
+use crate::helpers::{process, Command};
 use crate::result::{Context, Result};
 
 /// Defines directory paths used by `Paket`.
@@ -33,7 +34,7 @@ pub struct Paket {
 impl Paket {
     /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
-        // Check if Git and Fish shell binaries are installed
+        // Check if Git and Fish shell binaries are available
         Command::new("git", None)
             .spawn()
             .with_context(|| format!("`git` was not found! Please check if the latest `git` binary is installed on system."))?;
@@ -41,9 +42,16 @@ impl Paket {
             .spawn()
             .with_context(|| format!("`fish` was not found! Please check if the latest `fish` binary is installed on system."))?;
 
-        // TODO: Check if this tool is running on top of a Fish shell session
-        // For example using `echo $FISH_VERSION` which is exclusive to Fish shell
-        // See https://github.com/fish-shell/fish-shell/issues/374
+        // Check if `paket` is running on top of a Fish shell session
+        let pid = process::getppid().to_string();
+        let on_fish = System::new_all()
+            .get_process_by_name("fish")
+            .iter()
+            .any(|p| p.pid().to_string() == pid);
+
+        if !on_fish {
+            bail!("Paket is not running on top of a Fish shell session. Just run `fish` and then use `paket` from there.")
+        }
 
         let paths = Self::configure_paths()?;
         let opts = CommandOpts::from_args();

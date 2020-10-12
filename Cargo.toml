@@ -29,6 +29,8 @@ anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_ignored = "0.1"
 semver = { version = "0.10", features = ["serde"] }
+sysinfo = "0.15"
+libc = "0.2"
 
 [profile.release]
 lto = "fat"

@@ -1,5 +1,5 @@
-/// NOTE: Several functions here were borrowed from Cargo
-/// https://github.com/rust-lang/cargo/blob/master/src/cargo/util/toml/mod.rs
+// NOTE: Several functions here were borrowed from Cargo
+// https://github.com/rust-lang/cargo/blob/master/src/cargo/util/toml/mod.rs
 use std::fs;
 use std::path::{Path, PathBuf};
 
