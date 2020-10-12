@@ -1,10 +1,11 @@
-use std::{collections::BTreeSet, fs, path::PathBuf};
+use std::collections::BTreeSet;
+use std::fs;
+use std::path::PathBuf;
 use structopt::StructOpt;
 use sysinfo::{ProcessExt, System, SystemExt};
 
 use crate::cli::{App, CommandOpts};
-use crate::helpers::process;
-use crate::helpers::{file as helper_file, Command};
+use crate::helpers::{file as helper_file, process, Command};
 use crate::pkg::conf;
 use crate::result::{Context, Result};
 
@@ -126,16 +127,6 @@ impl Paket {
                 pkg_name
             )
         })?;
-
-        // DEV: enable this just for testing during development
-        // let pkg_toml_path = PathBuf::from("./src/pkg/conf/paket.toml")
-        //     .canonicalize()
-        //     .with_context(|| {
-        //         format!(
-        //             "`paket.toml` file was not found on package `{}` or is not accessible.",
-        //             pkg_name
-        //         )
-        //     })?;
 
         // Detect and read the `paket.toml` file
         let toml = conf::read_pkg_file(&pkg_toml_path)?;

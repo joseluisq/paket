@@ -1,4 +1,3 @@
-use std::io;
 use std::path::PathBuf;
 use std::process::{Child, Command as StdCommand, Stdio};
 
@@ -53,7 +52,7 @@ impl Command {
     }
 
     /// Executes the command as a child process, returning a handle to it.
-    pub fn spawn(&mut self) -> io::Result<Child> {
-        self.inner.spawn()
+    pub fn spawn(&mut self) -> Result<Child> {
+        Ok(self.inner.spawn()?)
     }
 }
