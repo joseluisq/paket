@@ -3,7 +3,8 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 use crate::cli::{App, CommandOpts};
-use crate::result::Result;
+use crate::helpers::Command;
+use crate::result::{Context, Result};
 
 /// Defines directory paths used by `Paket`.
 pub struct PaketPaths {
@@ -32,7 +33,13 @@ pub struct Paket {
 impl Paket {
     /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
-        // TODO: Check if Git and Fish shell binaries are installed
+        // Check if Git and Fish shell binaries are installed
+        Command::new("git", None)
+            .spawn()
+            .with_context(|| format!("`git` was not found! Please check if the latest `git` binary is installed on system."))?;
+        Command::new("fish", None)
+            .spawn()
+            .with_context(|| format!("`fish` was not found! Please check if the latest `fish` binary is installed on system."))?;
 
         // TODO: Check if this tool is running on top of a Fish shell session
         // For example using `echo $FISH_VERSION` which is exclusive to Fish shell

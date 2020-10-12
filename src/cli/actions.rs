@@ -173,8 +173,7 @@ impl<'a> Actions<'a> {
         })?;
 
         // Dispatch the Fish shell `paket_install` event
-        let cwd = std::env::current_dir()?;
-        let out = Command::new("fish", &cwd)
+        let out = Command::new("fish", None)
             .arg("-c")
             .arg("emit paket_install")
             .execute()?;
@@ -223,8 +222,7 @@ impl<'a> Actions<'a> {
         })?;
 
         // Dispatch the Fish shell `paket_update` event
-        let cwd = std::env::current_dir()?;
-        let out = Command::new("fish", &cwd)
+        let out = Command::new("fish", None)
             .arg("-c")
             .arg("emit paket_update")
             .execute()?;
@@ -259,8 +257,7 @@ impl<'a> Actions<'a> {
         let pkg_dir = pkg_dir.canonicalize()?;
 
         // Dispatch the Fish shell `paket_uninstall` event
-        let cwd = std::env::current_dir()?;
-        let out = Command::new("fish", &cwd)
+        let out = Command::new("fish", None)
             .arg("-c")
             .arg("emit paket_uninstall")
             .execute()?;

@@ -46,7 +46,7 @@ impl Git {
         let branch_tag = branch_tag.unwrap_or("master");
         let branch_str = ["--branch=", branch_tag].concat();
 
-        Command::new(self.exec_name(), &self.current_dir)
+        Command::new(self.exec_name(), Some(&self.current_dir))
             .arg("clone")
             .arg("--depth=1")
             .arg(branch_str)
@@ -60,7 +60,7 @@ impl Git {
         let branch_tag = branch_tag.unwrap_or("master");
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        Command::new(self.exec_name(), &cwd)
+        Command::new(self.exec_name(), Some(&cwd))
             .arg("fetch")
             .arg("--depth=1")
             .arg("origin")
@@ -77,7 +77,7 @@ impl Git {
         let branch = branch.unwrap();
         let cwd = self.base_dir.join(user_repo_name).canonicalize()?;
 
-        Command::new(self.exec_name(), &cwd)
+        Command::new(self.exec_name(), Some(&cwd))
             .arg("checkout")
             .arg(branch)
             .execute()
@@ -90,7 +90,7 @@ impl Git {
             bail!("repository `{}` was not found", user_repo_name);
         }
 
-        Command::new(self.exec_name(), &repo_dir)
+        Command::new(self.exec_name(), Some(&repo_dir))
             .arg("pull")
             .arg("origin")
             .arg("master")

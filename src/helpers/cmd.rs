@@ -1,5 +1,6 @@
+use std::io;
 use std::path::PathBuf;
-use std::process::{Command as StdCommand, Stdio};
+use std::process::{Child, Command as StdCommand, Stdio};
 
 use crate::result::Result;
 
@@ -10,9 +11,13 @@ pub struct Command {
 
 impl Command {
     /// Creates a new instance of `Cmd`
-    pub fn new(exec_name: &str, cwd: &PathBuf) -> Self {
+    pub fn new(exec_name: &str, cwd: Option<&PathBuf>) -> Self {
         let mut inner = StdCommand::new(exec_name);
-        inner.current_dir(cwd);
+
+        if let Some(cwd) = cwd {
+            inner.current_dir(cwd);
+        }
+
         inner.stdin(Stdio::null());
         inner.stdout(Stdio::piped());
         inner.stderr(Stdio::piped());
@@ -45,5 +50,10 @@ impl Command {
                 bail!("{}", err)
             }
         }
+    }
+
+    /// Executes the command as a child process, returning a handle to it.
+    pub fn spawn(&mut self) -> io::Result<Child> {
+        self.inner.spawn()
     }
 }
