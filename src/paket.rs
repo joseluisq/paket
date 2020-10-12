@@ -1,10 +1,11 @@
-use std::fs;
-use std::path::PathBuf;
+use std::{collections::BTreeSet, fs, path::PathBuf};
 use structopt::StructOpt;
 use sysinfo::{ProcessExt, System, SystemExt};
 
 use crate::cli::{App, CommandOpts};
-use crate::helpers::{process, Command};
+use crate::helpers::process;
+use crate::helpers::{file as helper_file, Command};
+use crate::pkg::conf;
 use crate::result::{Context, Result};
 
 /// Defines directory paths used by `Paket`.
@@ -110,5 +111,127 @@ impl Paket {
     pub fn pkg_exists(&self, pkg_name: &str) -> bool {
         let pkg_dir = self.paths.paket_dir.join(pkg_name);
         pkg_dir.exists() && pkg_dir.is_dir() && pkg_dir.read_dir().unwrap().next().is_some()
+    }
+
+    /// Read a Fish package directory and call a function passing a source file
+    /// path per every read along with its equivalent destination path.
+    pub fn read_pkg_dir<F>(&self, pkg_dir: &PathBuf, pkg_name: &str, mut func: F) -> Result
+    where
+        F: FnMut(&PathBuf, &PathBuf) -> Result,
+    {
+        let pkg_dir = pkg_dir.clone();
+        let pkg_toml_path = pkg_dir.join("paket.toml").canonicalize().with_context(|| {
+            format!(
+                "`paket.toml` file was not found on package `{}` or is not accessible.",
+                pkg_name
+            )
+        })?;
+
+        // DEV: enable this just for testing during development
+        // let pkg_toml_path = PathBuf::from("./src/pkg/conf/paket.toml")
+        //     .canonicalize()
+        //     .with_context(|| {
+        //         format!(
+        //             "`paket.toml` file was not found on package `{}` or is not accessible.",
+        //             pkg_name
+        //         )
+        //     })?;
+
+        // Detect and read the `paket.toml` file
+        let toml = conf::read_pkg_file(&pkg_toml_path)?;
+        let mut unused = BTreeSet::new();
+        let manifest: conf::TomlManifest = serde_ignored::deserialize(toml, |path| {
+            let mut key = String::new();
+            helper_file::stringify(&mut key, &path);
+            unused.insert(key);
+        })?;
+
+        for key in unused {
+            println!("unused manifest key: {}", key);
+        }
+
+        // Read `package` toml section
+        let toml_pkg = if manifest.package.is_some() {
+            manifest.package.unwrap()
+        } else {
+            bail!("`paket.toml` file is empty or can not be read.")
+        };
+
+        // Read `include` toml property of `package` section
+        let pkg_include = &toml_pkg.include.unwrap_or(vec![]);
+        // TODO: support Git glob-like file's reading on `include` toml array. Plain file paths only for now.
+
+        // `configuration snippets` -> conf.d/*.fish
+        // `completions` -> completions/*.fish
+        // `functions` -> functions/*.fish
+        let snippets_dir = &self.paths.fish_snippets_dir;
+        let completions_dir = &self.paths.fish_completions_dir;
+        let functions_dir = &self.paths.fish_functions_dir;
+
+        let mut stack_paths = vec![pkg_dir];
+        let path_suffixes = vec!["conf.d", "completions", "functions"];
+
+        // NOTE: copy only files contained on "conf.d", "completions" or "functions" directories
+        while let Some(working_path) = stack_paths.pop() {
+            for entry in fs::read_dir(working_path)? {
+                let path = entry?.path();
+
+                if path.is_dir() {
+                    // Check for valid allowed directories
+                    if helper_file::has_path_any_suffixes(&path, &path_suffixes) {
+                        stack_paths.push(path);
+                    }
+                    continue;
+                }
+
+                // Check for files with allowed directory parents
+                if let Some(parent) = path.parent() {
+                    if !helper_file::has_path_any_suffixes(&parent, &path_suffixes) {
+                        continue;
+                    }
+
+                    let mut fish_dir = snippets_dir;
+                    if parent.ends_with("completions") {
+                        fish_dir = &completions_dir;
+                    }
+                    if parent.ends_with("functions") {
+                        fish_dir = &functions_dir;
+                    }
+
+                    // call callback function with a source and destination paths
+                    match path.file_name() {
+                        Some(filename) => {
+                            let filename = filename.to_str();
+                            let is_fish_file = match filename {
+                                Some(f) => f.ends_with(".fish"),
+                                _ => false,
+                            };
+
+                            let dest_path = fish_dir.join(filename.unwrap());
+
+                            // Copy Fish shell files
+                            if is_fish_file {
+                                func(&path, &dest_path)?;
+                                continue;
+                            }
+
+                            // Try to copy included non Fish shell files
+                            if pkg_include.is_empty() {
+                                continue;
+                            }
+                            let is_included = pkg_include.iter().any(|f| path.ends_with(f));
+                            if is_included {
+                                func(&path, &dest_path)?;
+                            }
+                        }
+                        None => {
+                            bail!("failed to get file name for path {:?}", path);
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }
