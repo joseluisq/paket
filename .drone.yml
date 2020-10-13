@@ -88,17 +88,6 @@ steps:
     auto_tag_aliases:
       - latest
 
-- name: gitea-release
-  image: plugins/gitea-release
-  settings:
-    api_key:
-      from_secret: gitea_token
-    base_url: https://git.joseluisq.net/
-    files:
-      - ./bin/*.tar.gz
-      - ./bin/*-SHA256SUM
-    draft: true
-
 - name: github-release
   image: plugins/github-release
   settings:
@@ -133,7 +122,6 @@ trigger:
     exclude:
     - refs/tags/**rc**
     - refs/tags/**alpha**
-    - refs/tags/**beta**
     - refs/tags/**latest**
     - refs/tags/**dev**
 
