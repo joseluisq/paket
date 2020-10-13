@@ -1,0 +1,165 @@
+---
+kind: pipeline
+type: docker
+name: development
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: restore-cache
+  image: drillster/drone-volume-cache
+  volumes:
+    - name: cache
+      path: /cache
+  settings:
+    restore: true
+    mount:
+      - ./target
+
+- name: test
+  image: joseluisq/rust-linux-darwin-builder:1.47.0
+  commands:
+    - make test
+
+- name: rebuild-cache
+  image: drillster/drone-volume-cache
+  volumes:
+    - name: cache
+      path: /cache
+  settings:
+    rebuild: true
+    mount:
+      - ./target
+
+volumes:
+  - name: cache
+    host:
+      path: /tmp/cache
+
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    - master
+    - develop
+    - feature/*
+    - bugfix/*
+    - hotfix/*
+
+
+
+---
+kind: pipeline
+type: docker
+name: production
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: test
+  image: joseluisq/rust-linux-darwin-builder:1.47.0
+  commands:
+    - make test
+
+- name: release
+  image: joseluisq/rust-linux-darwin-builder:1.47.0
+  commands:
+    - make prod.release
+
+- name: publish-scratch
+  image: joseluisq/drone-docker
+  privileged: true
+  settings:
+    registry: registry.joseluisq.net
+    repo: registry.joseluisq.net/paket
+    dockerfile: ./docker/scratch/Dockerfile
+    username:
+      from_secret: registry_username
+    password:
+      from_secret: registry_password
+    build_args:
+      - PAKET_VERSION=${DRONE_TAG##v}
+    auto_tag: true
+    auto_tag_aliases:
+      - latest
+
+- name: gitea-release
+  image: plugins/gitea-release
+  settings:
+    api_key:
+      from_secret: gitea_token
+    base_url: https://git.joseluisq.net/
+    files:
+      - ./bin/*.tar.gz
+      - ./bin/*-SHA256SUM
+    draft: true
+
+- name: github-release
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    files:
+      - ./bin/*.tar.gz
+      - ./bin/*-SHA256SUM
+    title: ${DRONE_TAG}
+    draft: true
+
+- name: publish-public-scratch
+  image: joseluisq/drone-docker
+  privileged: true
+  settings:
+    repo: joseluisq/paket
+    dockerfile: ./docker/scratch/Dockerfile
+    username:
+      from_secret: dockerhub_username
+    password:
+      from_secret: dockerhub_password
+    build_args:
+      - PAKET_VERSION=${DRONE_TAG##v}
+    auto_tag: true
+    auto_tag_aliases:
+      - latest
+
+trigger:
+  ref:
+    include:
+    - refs/tags/v*
+    exclude:
+    - refs/tags/**rc**
+    - refs/tags/**alpha**
+    - refs/tags/**beta**
+    - refs/tags/**latest**
+    - refs/tags/**dev**
+
+
+---
+kind: pipeline
+type: docker
+name: notification
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: notify
+  image: plugins/slack
+  settings:
+    webhook:
+      from_secret: slack_webhook
+    channel: ci-cd
+
+depends_on:
+- development
+- production
+
+trigger:
+  status:
+  - success
+  - failure
