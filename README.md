@@ -1,6 +1,6 @@
 # Paket 📦
 
-> A simple package manager for the [Fish shell](https://fishshell.com/) written in [Rust](https://www.rust-lang.org/). 🐠
+> A simple and fast package manager for the [Fish shell](https://fishshell.com/) written in [Rust](https://www.rust-lang.org/). 🐠
 
 This is an *WIP* Git-based *"package manager"* for Fish shell which is under **active** development.
 
@@ -12,6 +12,8 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 - Tiny but ultra fast static binary powered by [Rust](https://www.rust-lang.org/).
 - Package file support ([`paket.toml`](#package-file)) to describe a package and copy optional non `.fish` files.
 - Trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) when a package is installed, updated or uninstalled.
+- It runs only on top of a Fish shell session (Fish parent process).
+- Docker support. [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
 
 ## Usage
 
