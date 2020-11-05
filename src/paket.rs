@@ -63,33 +63,57 @@ impl Paket {
 
     /// Configure directory paths used by `Paket`.
     fn configure_paths() -> Result<PaketPaths> {
+        // User's home directory
         let home_dir = dirs::home_dir()
-            .expect("user home directory was not found or is not accessible.")
+            .expect("user home directory was not found or inaccessible.")
             .canonicalize()?;
 
-        // Config directory
+        // User's home config directory
         let config_dir = home_dir.join(".config");
-
         if !config_dir.exists() {
-            fs::create_dir_all(&config_dir)?;
+            fs::create_dir_all(&config_dir)
+                .with_context(|| "Home config directory can not be created.")?;
         }
-
-        let config_dir = config_dir.canonicalize()?;
+        let config_dir = config_dir
+            .canonicalize()
+            .with_context(|| "home config directory was not found or inaccessible.")?;
 
         // Fish config directories
-        let fish_dir = config_dir.join("fish").canonicalize()?;
-        let fish_snippets_dir = fish_dir.join("conf.d").canonicalize()?;
-        let fish_completions_dir = fish_dir.join("completions").canonicalize()?;
-        let fish_functions_dir = fish_dir.join("functions").canonicalize()?;
+        let fish_dir = config_dir
+            .join("fish")
+            .canonicalize()
+            .with_context(|| "fish config directory was not found or inaccessible.")?;
 
-        // Paket directory
-        let paket_dir = config_dir.join("paket");
-
-        if !paket_dir.exists() {
-            fs::create_dir_all(&paket_dir)?;
+        // Fish config snippets directory
+        let fish_snippets_dir = fish_dir.join("conf.d");
+        if !fish_snippets_dir.exists() {
+            fs::create_dir_all(&fish_snippets_dir)
+                .with_context(|| "fish snippets directory can not be created.")?;
         }
 
-        let paket_dir = paket_dir.canonicalize()?;
+        // Fish config completions directory
+        let fish_completions_dir = fish_dir.join("completions");
+        if !fish_completions_dir.exists() {
+            fs::create_dir_all(&fish_completions_dir)
+                .with_context(|| "fish completions directory can not be created.")?;
+        }
+
+        // Fish config functions directory
+        let fish_functions_dir = fish_dir.join("functions");
+        if !fish_functions_dir.exists() {
+            fs::create_dir_all(&fish_functions_dir)
+                .with_context(|| "fish functions directory can not be created.")?;
+        }
+
+        // Paket config directory
+        let paket_dir = config_dir.join("paket");
+        if !paket_dir.exists() {
+            fs::create_dir_all(&paket_dir)
+                .with_context(|| "paket config directory can not be created.")?;
+        }
+        let paket_dir = paket_dir
+            .canonicalize()
+            .with_context(|| "paket config directory was not found or inaccessible.")?;
 
         Ok(PaketPaths {
             config_dir,
@@ -123,7 +147,7 @@ impl Paket {
         let pkg_dir = pkg_dir.clone();
         let pkg_toml_path = pkg_dir.join("paket.toml").canonicalize().with_context(|| {
             format!(
-                "`paket.toml` file was not found on package `{}` or is not accessible.",
+                "`paket.toml` file was not found on package `{}` or inaccessible.",
                 pkg_name
             )
         })?;
