@@ -1,0 +1,4 @@
+*
+
+!bin/paket
+!docker/alpine/entrypoint.sh

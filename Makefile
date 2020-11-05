@@ -24,7 +24,7 @@ run:
 build:
 	@echo "Building application..."
 	@rustc -vV
-	@cargo build --release
+	@cargo build --release --target x86_64-unknown-linux-musl
 .PHONY: build
 
 test:
@@ -122,3 +122,11 @@ prod.release:
 	$(build_release_shrink)
 	$(build_release_files)
 .ONESHELL: prod.release
+
+docker.build:
+	@docker build -t joseluisq/paket:latest -f docker/alpine/Dockerfile .
+.PHONY: docker.build
+
+docker.run:
+	@docker run -it --rm joseluisq/paket:latest -h
+.PHONY: docker.run
