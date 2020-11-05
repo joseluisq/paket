@@ -13,7 +13,12 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 - Package file support ([`paket.toml`](#package-file)) to describe a package and copy optional non `.fish` files.
 - Trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) when a package is installed, updated or uninstalled.
 - It runs only on top of a Fish shell session (Fish parent process).
-- Docker support. [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
+- Docker support.
+
+## Install
+
+- Docker Alpine 3.11 image: [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
+- Release binaries for Linux/Macos amd64: [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
 
 ## Usage
 
