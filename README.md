@@ -49,7 +49,7 @@ SUBCOMMANDS:
 ~> paket rm joseluisq/gitnow
 ```
 
-## Package file
+## Paket file
 
 Paket supports a `paket.toml` file in order to describe a package and copy optional non `.fish` files.
 Here a sample file of [GitNow](https://github.com/joseluisq/gitnow) Fish package.
@@ -118,10 +118,10 @@ Because its a WIP repository some functionalies are missing right now. So feel f
 - [x] Dispatch Fish shell `paket_install`, `paket_update`, `paket_uninstall` events.
 - [x] Add package file `paket.toml` support.
 - [ ] Dependencies support.
-- [ ] Add configuration file `~/paket.toml` support.
-- [ ] Ability to install package from local.
-- [ ] Add support for Bitbucket, Gitlab, etc. Github for now.
 - [ ] Prevent unnecessary clones for same versions (tags)
+- [ ] Ability to install package from local.
+- [ ] Add configuration file `~/paket.toml` support.
+- [ ] Add support for Bitbucket, Gitlab, etc. Github for now.
 - [ ] ?
 
 ## Contributions
