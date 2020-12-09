@@ -20,7 +20,7 @@ impl<'a> Actions<'a> {
     }
 
     /// Command action to install a new package and invoke a `paket_install` Fish shell event.
-    pub fn install(&self, pkg_name: &str) -> Result {
+    pub fn install(&self, pkg_name: &str, git_provider: &str) -> Result {
         let pkgfmt = PkgNameFmt::from(&pkg_name)?;
         let pkg_name = &pkgfmt.get_short_name();
         let pkg_tag = Some(pkgfmt.pkg_tag.as_ref());
@@ -35,7 +35,7 @@ impl<'a> Actions<'a> {
             );
         }
 
-        self.git.clone(pkg_name, pkg_tag)?;
+        self.git.clone(pkg_name, pkg_tag, git_provider)?;
 
         // Process Fish shell package structure
         let pkg_dir = self.git.base_dir.join(&pkg_name);

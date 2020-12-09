@@ -10,7 +10,7 @@ impl App {
 
         if let Some(commands) = &pk.opts.commands {
             match commands {
-                Commands::Add { pkg_name } => actions.install(pkg_name),
+                Commands::Add { pkg_name, provider } => actions.install(pkg_name, provider),
                 Commands::Update { pkg_name } => actions.update(pkg_name),
                 Commands::Remove { pkg_name } => actions.remove(pkg_name),
             }?

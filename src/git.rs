@@ -24,10 +24,17 @@ impl Git {
         })
     }
 
-    fn get_remote_endpoint(user_repo_name: &str) -> String {
-        // TODO: support more Git host providers
-        // GitHub support for now
-        ["https://github.com/", user_repo_name, ".git"].concat()
+    fn get_remote_endpoint(user_repo_name: &str, provider: &str) -> Result<String> {
+        let provider = match provider {
+            "github" => "github.com",
+            "bitbucket" => "bitbucket.org",
+            "gitlab" => "gitlab.com",
+            _ => bail!(
+                "git host provider not supported. use a full url endpoint with `add` command instead"
+            ),
+        };
+
+        Ok(["https://", provider, "/", user_repo_name, ".git"].concat())
     }
 
     fn exec_name(&self) -> &'static str {
@@ -35,8 +42,13 @@ impl Git {
     }
 
     /// Clone a Git repository.
-    pub fn clone(&self, user_repo_name: &str, branch_tag: Option<&str>) -> Result<String> {
-        let endpoint = Git::get_remote_endpoint(user_repo_name);
+    pub fn clone(
+        &self,
+        user_repo_name: &str,
+        branch_tag: Option<&str>,
+        git_provider: &str,
+    ) -> Result<String> {
+        let endpoint = Git::get_remote_endpoint(user_repo_name, git_provider)?;
 
         let out_dir = self.base_dir.join(user_repo_name);
         if !out_dir.exists() {

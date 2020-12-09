@@ -12,6 +12,9 @@ pub enum Commands {
     /// Add a new package from a local or remote repository
     #[structopt(name = "add")]
     Add {
+        #[structopt(short = "p", long, default_value = "github")]
+        /// A Git host provider like github, bitbucket or gitlab.
+        provider: String,
         /// Package name. E.g joseluisq/gitnow
         pkg_name: String,
     },
