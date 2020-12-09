@@ -13,3 +13,4 @@
 **/*.gz
 **/.DS_Store
 release
+.vscode
