@@ -66,12 +66,12 @@ steps:
   commands:
     - make test
 
-- name: release
+- name: release-linux
   image: joseluisq/rust-linux-darwin-builder:1.48.0
   commands:
-    - make prod.release
+    - make prod.release.linux
 
-- name: publish-alpine
+- name: publish-linux-local
   image: joseluisq/drone-docker
   privileged: true
   settings:
@@ -88,18 +88,7 @@ steps:
     auto_tag_aliases:
       - latest
 
-- name: github-release
-  image: plugins/github-release
-  settings:
-    api_key:
-      from_secret: github_token
-    files:
-      - ./bin/*.tar.gz
-      - ./bin/*-SHA256SUM
-    title: ${DRONE_TAG}
-    draft: true
-
-- name: publish-public-alpine
+- name: publish-linux-dockerhub
   image: joseluisq/drone-docker
   privileged: true
   settings:
@@ -114,6 +103,47 @@ steps:
     auto_tag: true
     auto_tag_aliases:
       - latest
+
+- name: release-darwin
+  image: joseluisq/rust-linux-darwin-builder:1.48.0
+  commands:
+    - make prod.release.darwin
+
+- name: release-archive-linux
+  image: joseluisq/drone-archive
+  commands:
+  settings:
+    format: tar
+    src_cwd: ./target/x86_64-unknown-linux-musl/release
+    src: ./paket
+    dest: ./release/paket-${DRONE_TAG}-x86_64-unknown-linux-musl.tar.gz
+    checksum: true
+    checksum_algo: sha256
+    checksum_dest: ./release/paket-${DRONE_TAG}.SHA256SUM
+
+- name: release-archive-darwin
+  image: joseluisq/drone-archive
+  commands:
+  settings:
+    format: zip
+    src_cwd: ./target/x86_64-apple-darwin/release
+    src: ./paket
+    dest: ./release/paket-${DRONE_TAG}-x86_64-apple-darwin.zip
+    checksum: true
+    checksum_algo: sha256
+    checksum_dest: ./release/paket-${DRONE_TAG}.SHA256SUM
+
+- name: github-release
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    files:
+      - ./release/*.tar.gz
+      - ./release/*.zip
+      - ./release/*-SHA256SUM
+    title: ${DRONE_TAG}
+    draft: true
 
 trigger:
   ref:
