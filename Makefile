@@ -3,17 +3,9 @@ PKG_TARGET_DARWIN=x86_64-apple-darwin
 RUST_VERSION ?= $(shell rustc --version | cut -d ' ' -f2)
 
 PKG_BIN_PATH=./bin
-PKG_TMP_PATH=/tmp
 
 PKG_NAME=$(shell cat Cargo.toml | sed -n 's/name = "\([^}]*\)"/\1/p' | head -n1)
 PKG_TAG=$(shell cat Cargo.toml | sed -n 's/version = "\([^}]*\)"/\1/p' | head -n1)
-
-PKG_RELEASE_NAME=$(PKG_NAME)-v$(PKG_TAG)-$(PKG_TARGET)
-PKG_RELEASE_NAME_DARWIN=$(PKG_NAME)-v$(PKG_TAG)-$(PKG_TARGET_DARWIN)
-
-PKG_TMP_BIN_PATH=$(PKG_TMP_PATH)/$(PKG_RELEASE_NAME)
-PKG_TMP_BIN_PATH_DARWIN=$(PKG_TMP_PATH)/$(PKG_RELEASE_NAME_DARWIN)
-
 
 run:
 	@echo "Running application..."
@@ -47,6 +39,18 @@ docker.run:
 	@docker run -it --rm joseluisq/paket:latest -h
 .PHONY: docker.run
 
+pipeline-prod:
+	@drone exec \
+		--trusted \
+		--privileged \
+		--event=tag \
+		--exclude=test \
+		--exclude=publish-linux-local \
+		--exclude=publish-linux-dockerhub \
+		--exclude=github-release \
+		--pipeline=production
+.PHONY: pipeline-prod
+
 
 #######################################
 ########## Production tasks ###########
@@ -59,10 +63,11 @@ prod.release.linux:
 	@cargo build --release --target $(PKG_TARGET)
 	@du -sh ./target/$(PKG_TARGET)/release/$(PKG_NAME)
 
-	@echo "Shrinking binary release..."
+	@echo "Shrinking release binary..."
 	@strip ./target/$(PKG_TARGET)/release/$(PKG_NAME)
 	@du -sh ./target/$(PKG_TARGET)/release/$(PKG_NAME)
-	@./target/$(PKG_TARGET)/release/$(PKG_NAME) --help
+	@mkdir -p $(PKG_BIN_PATH)/$(PKG_TARGET)/
+	@cp ./target/$(PKG_TARGET)/release/$(PKG_NAME) $(PKG_BIN_PATH)/$(PKG_TARGET)/
 .PHONY: prod.release.linux
 
 prod.release.darwin:
@@ -71,7 +76,9 @@ prod.release.darwin:
 	@cargo build --release --target $(PKG_TARGET_DARWIN)
 	@du -sh ./target/$(PKG_TARGET_DARWIN)/release/$(PKG_NAME)
 
-	@echo "Shrinking binary release..."
+	@echo "Shrinking release binary..."
 	@x86_64-apple-darwin15-strip ./target/$(PKG_TARGET_DARWIN)/release/$(PKG_NAME)
 	@du -sh ./target/$(PKG_TARGET_DARWIN)/release/$(PKG_NAME)
+	@mkdir -p $(PKG_BIN_PATH)/$(PKG_TARGET_DARWIN)/
+	@cp ./target/$(PKG_TARGET_DARWIN)/release/$(PKG_NAME) $(PKG_BIN_PATH)/$(PKG_TARGET_DARWIN)/
 .PHONY: prod.release.darwin

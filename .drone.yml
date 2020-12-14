@@ -104,38 +104,41 @@ steps:
     auto_tag_aliases:
       - latest
 
+- name: release-archive-linux
+  image: joseluisq/drone-archive
+  settings:
+    format: tar
+    src_base_path: ./bin/x86_64-unknown-linux-musl
+    src: ./paket
+    dest: ./release/paket-${DRONE_TAG}-x86_64-unknown-linux-musl.tar.gz
+    checksum: true
+    checksum_algo: sha256
+    checksum_dest: ./release/paket-${DRONE_TAG}-x86_64-unknown-linux-musl-SHA256SUM
+
 - name: release-darwin
   image: joseluisq/rust-linux-darwin-builder:1.48.0
   commands:
     - make prod.release.darwin
 
-- name: release-archive-linux
-  image: joseluisq/drone-archive
-  settings:
-    format: tar
-    src_base_path: ./target/x86_64-unknown-linux-musl/release
-    src: ./paket
-    dest: ./release/paket-${DRONE_TAG}-x86_64-unknown-linux-musl.tar.gz
-    checksum: true
-    checksum_algo: sha256
-    checksum_dest: ./release/paket-${DRONE_TAG}.SHA256SUM
-
 - name: release-archive-darwin
   image: joseluisq/drone-archive
   settings:
     format: zip
-    src_base_path: ./target/x86_64-apple-darwin/release
+    src_base_path: ./bin/x86_64-apple-darwin
     src: ./paket
     dest: ./release/paket-${DRONE_TAG}-x86_64-apple-darwin.zip
     checksum: true
     checksum_algo: sha256
-    checksum_dest: ./release/paket-${DRONE_TAG}.SHA256SUM
+    checksum_dest: ./release/paket-${DRONE_TAG}-x86_64-apple-darwin-SHA256SUM
 
 - name: release-archive-check
   image: alpine:3.12
   commands:
-  - du -sh ./release/*
-  - sha256sum -c ./release/*-SHA256SUM
+  - cd ./release
+  - cat paket-${DRONE_TAG}-x86_64-unknown-linux-musl-SHA256SUM paket-${DRONE_TAG}-x86_64-apple-darwin-SHA256SUM > paket-${DRONE_TAG}-x86_64-SHA256SUM
+  - rm -rf paket-${DRONE_TAG}-x86_64-apple-darwin-SHA256SUM
+  - rm -rf paket-${DRONE_TAG}-x86_64-unknown-linux-musl-SHA256SUM
+  - sha256sum -c *SHA256SUM
 
 - name: github-release
   image: plugins/github-release

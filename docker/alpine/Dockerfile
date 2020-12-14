@@ -13,7 +13,7 @@ RUN set -eux \
     && true
 
 COPY ./docker/alpine/entrypoint.sh /
-COPY ./target/x86_64-unknown-linux-musl/release/paket /usr/local/bin/
+COPY ./bin/x86_64-unknown-linux-musl/paket /usr/local/bin/
 
 ENTRYPOINT ["/entrypoint.sh"]
 
