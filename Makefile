@@ -62,6 +62,7 @@ prod.release.linux:
 	@echo "Shrinking binary release..."
 	@strip ./target/$(PKG_TARGET)/release/$(PKG_NAME)
 	@du -sh ./target/$(PKG_TARGET)/release/$(PKG_NAME)
+	@./target/$(PKG_TARGET)/release/$(PKG_NAME) --help
 .PHONY: prod.release.linux
 
 prod.release.darwin:

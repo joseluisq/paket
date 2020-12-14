@@ -111,10 +111,9 @@ steps:
 
 - name: release-archive-linux
   image: joseluisq/drone-archive
-  commands:
   settings:
     format: tar
-    src_cwd: ./target/x86_64-unknown-linux-musl/release
+    src_base_path: ./target/x86_64-unknown-linux-musl/release
     src: ./paket
     dest: ./release/paket-${DRONE_TAG}-x86_64-unknown-linux-musl.tar.gz
     checksum: true
@@ -123,15 +122,20 @@ steps:
 
 - name: release-archive-darwin
   image: joseluisq/drone-archive
-  commands:
   settings:
     format: zip
-    src_cwd: ./target/x86_64-apple-darwin/release
+    src_base_path: ./target/x86_64-apple-darwin/release
     src: ./paket
     dest: ./release/paket-${DRONE_TAG}-x86_64-apple-darwin.zip
     checksum: true
     checksum_algo: sha256
     checksum_dest: ./release/paket-${DRONE_TAG}.SHA256SUM
+
+- name: release-archive-check
+  image: alpine:3.12
+  commands:
+  - du -sh ./release/*
+  - sha256sum -c ./release/*-SHA256SUM
 
 - name: github-release
   image: plugins/github-release
