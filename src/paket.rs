@@ -6,7 +6,7 @@ use sysinfo::{ProcessExt, System, SystemExt};
 
 use crate::cli::{App, CommandOpts};
 use crate::helpers::{file as helper_file, process, Command};
-use crate::pkg::conf;
+use crate::pkg::config;
 use crate::result::{Context, Result};
 
 /// Defines directory paths used by `Paket`.
@@ -39,10 +39,10 @@ impl Paket {
         // Check if Git and Fish shell binaries are available
         Command::new("git", None)
             .spawn()
-            .with_context(|| format!("`git` was not found! Please check if the latest `git` binary is installed on system."))?;
+            .with_context(|| "`git` was not found! Please check if the latest `git` binary is installed on system.".to_string())?;
         Command::new("fish", None)
             .spawn()
-            .with_context(|| format!("`fish` was not found! Please check if the latest `fish` binary is installed on system."))?;
+            .with_context(|| "`fish` was not found! Please check if the latest `fish` binary is installed on system.".to_string())?;
 
         // Check if `paket` is running on top of a Fish shell session
         let pid = process::getppid().to_string();
@@ -153,9 +153,9 @@ impl Paket {
         })?;
 
         // Detect and read the `paket.toml` file
-        let toml = conf::read_pkg_file(&pkg_toml_path)?;
+        let toml = config::read_pkg_file(&pkg_toml_path)?;
         let mut unused = BTreeSet::new();
-        let manifest: conf::TomlManifest = serde_ignored::deserialize(toml, |path| {
+        let manifest: config::TomlManifest = serde_ignored::deserialize(toml, |path| {
             let mut key = String::new();
             helper_file::stringify(&mut key, &path);
             unused.insert(key);
@@ -173,7 +173,7 @@ impl Paket {
         };
 
         // Read `include` toml property of `package` section
-        let pkg_include = &toml_pkg.include.unwrap_or(vec![]);
+        let pkg_include = &toml_pkg.include.unwrap_or_default();
         // TODO: support Git glob-like file's reading on `include` toml array. Plain file paths only for now.
 
         // `configuration snippets` -> conf.d/*.fish

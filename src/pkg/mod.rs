@@ -1,2 +1,2 @@
-pub mod conf;
+pub mod config;
 pub mod fmt;
