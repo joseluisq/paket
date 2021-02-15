@@ -8,7 +8,8 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 
 - Rely only on [Git](https://git-scm.com/) binary and its well known features (clone, fetch, checkout, pull, tag, etc).
 - No registries. Git repositories instead.
-- Just uses the format: `username/package_name@(tag_name|branch_name)`
+- Just uses the format: `username/package_name@(tag_name|branch_name)`.
+- Install, update or remove packages from local repositories or remote ones.
 - Tiny but ultra fast static binary powered by [Rust](https://www.rust-lang.org/).
 - Package file support ([`paket.toml`](#package-file)) to describe a package and copy optional non `.fish` files.
 - Trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) when a package is installed, updated or uninstalled.
