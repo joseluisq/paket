@@ -38,8 +38,8 @@ impl<'a> PkgNameFmt {
             let pkg_name = match pkg_path.iter().last() {
                 Some(v) => v.to_str().unwrap().into(),
                 None => bail!(
-                    "directory name for path \"{:?}\" was not determined",
-                    pkg_path,
+                    "directory name for path \"{}\" was not determined",
+                    pkg_path.display(),
                 ),
             };
 

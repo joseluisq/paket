@@ -28,7 +28,10 @@ impl<'a> Actions<'a> {
 
         // Check for a local package (directory path) or a remote one
         let pkg_dir = if let Some(pkg_path) = pkgfmt.get_pkg_path() {
-            println!("Installing package from directory `{:?}`...", pkg_path);
+            println!(
+                "Installing package from directory `{}`...",
+                pkg_path.display()
+            );
             pkg_path
         } else {
             println!("Installing package `{}@{}`...", &pkg_name, branch_tag);
@@ -82,7 +85,10 @@ impl<'a> Actions<'a> {
 
         // Check for a local package (directory path) or a remote one
         let pkg_dir = if let Some(pkg_path) = pkgfmt.get_pkg_path() {
-            println!("Updating package from directory `{:?}`...", pkg_path);
+            println!(
+                "Updating package from directory `{}`...",
+                pkg_path.display()
+            );
             pkg_path
         } else {
             println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
@@ -132,19 +138,31 @@ impl<'a> Actions<'a> {
     pub fn remove(&self, pkg_name: &str) -> Result {
         let pkgfmt = PkgNameFmt::from(&pkg_name)?;
         let pkg_name = &pkgfmt.get_short_name();
+        let pkg_path = pkgfmt.get_pkg_path();
+        let is_pkg_path = pkg_path.is_some();
 
-        println!("Removing package `{}`...", &pkg_name);
-
-        // Process Fish shell package structure
-        let pkg_dir = self.git.base_dir.join(&pkg_name);
-        if !self.pkt.pkg_exists(pkg_name) {
-            bail!(
-                "package `{}` is not installed or was already removed.",
-                pkg_name
+        // Check for a local package (directory path) or a remote one
+        let pkg_dir = if is_pkg_path {
+            let pkg_path = pkg_path.unwrap_or_default();
+            println!(
+                "Removing installed package using as reference directory `{}`...",
+                pkg_path.display()
             );
-        }
+            pkg_path
+        } else {
+            println!("Removing package `{}`...", &pkg_name);
 
-        let pkg_dir = pkg_dir.canonicalize()?;
+            // Process Fish shell package structure
+            let pkg_dir = self.git.base_dir.join(&pkg_name);
+            if !self.pkt.pkg_exists(pkg_name) {
+                bail!(
+                    "package `{}` is not installed or was already removed.",
+                    pkg_name
+                );
+            }
+
+            pkg_dir.canonicalize()?
+        };
 
         // Dispatch the Fish shell `paket_uninstall` event
         let out = Command::new("fish", None)
@@ -163,12 +181,17 @@ impl<'a> Actions<'a> {
             Ok(())
         })?;
 
-        // NOTE: For now just remove the package Git repository as well
-        fs::remove_dir_all(pkg_dir)?;
+        if !is_pkg_path {
+            // TODO: Prevent unnecessary clones for same versions (using cache)
+            // https://github.com/joseluisq/paket/issues/5
+
+            // NOTE: For now we just remove the "cached" Git repository package too and
+            // only for remote-installed ones
+            fs::remove_dir_all(pkg_dir)?;
+        }
 
         println!("Package was removed successfully.");
-        println!("Now reload your current Fish shell session or source your config file:");
-        println!("source ~/.config/fish/config.fish");
+        println!("Now just reload your current Fish shell session.");
 
         Ok(())
     }

@@ -243,7 +243,7 @@ impl Paket {
                             }
                         }
                         None => {
-                            bail!("failed to get file name for path {:?}", path);
+                            bail!("failed to get file name for path {}", path.display());
                         }
                     }
                 }
