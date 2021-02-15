@@ -36,13 +36,15 @@ pub struct Paket {
 impl Paket {
     /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
-        // Check if Git and Fish shell binaries are available
-        Command::new("git", None)
-            .spawn()
-            .with_context(|| "`git` was not found! Please check if the latest `git` binary is installed on system.".to_string())?;
-        Command::new("fish", None)
-            .spawn()
-            .with_context(|| "`fish` was not found! Please check if the latest `fish` binary is installed on system.".to_string())?;
+        // Check if Git and Fish shell binaries are available on system
+        Command::new("git", None).spawn().with_context(|| {
+            "`git` was not found! Please check if the latest binary is installed on system."
+                .to_string()
+        })?;
+        Command::new("fish", None).spawn().with_context(|| {
+            "`fish` was not found! Please check if the latest binary is installed on system."
+                .to_string()
+        })?;
 
         // Check if `paket` is running on top of a Fish shell session
         let pid = process::getppid().to_string();
@@ -65,7 +67,7 @@ impl Paket {
     fn configure_paths() -> Result<PaketPaths> {
         // User's home directory
         let home_dir = dirs::home_dir()
-            .expect("user home directory was not found or inaccessible.")
+            .expect("User home directory was not found or inaccessible.")
             .canonicalize()?;
 
         // User's home config directory
@@ -76,44 +78,44 @@ impl Paket {
         }
         let config_dir = config_dir
             .canonicalize()
-            .with_context(|| "home config directory was not found or inaccessible.")?;
+            .with_context(|| "Home config directory was not found or inaccessible.")?;
 
         // Fish config directories
         let fish_dir = config_dir
             .join("fish")
             .canonicalize()
-            .with_context(|| "fish config directory was not found or inaccessible.")?;
+            .with_context(|| "Fish config directory was not found or inaccessible.")?;
 
         // Fish config snippets directory
         let fish_snippets_dir = fish_dir.join("conf.d");
         if !fish_snippets_dir.exists() {
             fs::create_dir_all(&fish_snippets_dir)
-                .with_context(|| "fish snippets directory can not be created.")?;
+                .with_context(|| "Fish snippets directory can not be created.")?;
         }
 
         // Fish config completions directory
         let fish_completions_dir = fish_dir.join("completions");
         if !fish_completions_dir.exists() {
             fs::create_dir_all(&fish_completions_dir)
-                .with_context(|| "fish completions directory can not be created.")?;
+                .with_context(|| "Fish completions directory can not be created.")?;
         }
 
         // Fish config functions directory
         let fish_functions_dir = fish_dir.join("functions");
         if !fish_functions_dir.exists() {
             fs::create_dir_all(&fish_functions_dir)
-                .with_context(|| "fish functions directory can not be created.")?;
+                .with_context(|| "Fish functions directory can not be created.")?;
         }
 
         // Paket config directory
         let paket_dir = config_dir.join("paket");
         if !paket_dir.exists() {
             fs::create_dir_all(&paket_dir)
-                .with_context(|| "paket config directory can not be created.")?;
+                .with_context(|| "Paket config directory can not be created.")?;
         }
         let paket_dir = paket_dir
             .canonicalize()
-            .with_context(|| "paket config directory was not found or inaccessible.")?;
+            .with_context(|| "Paket config directory was not found or inaccessible.")?;
 
         Ok(PaketPaths {
             config_dir,
@@ -174,7 +176,8 @@ impl Paket {
 
         // Read `include` toml property of `package` section
         let pkg_include = &toml_pkg.include.unwrap_or_default();
-        // TODO: support Git glob-like file's reading on `include` toml array. Plain file paths only for now.
+        // TODO: support Git glob-like file's reading on `include` toml array.
+        // Plain file paths only for now.
 
         // `configuration snippets` -> conf.d/*.fish
         // `completions` -> completions/*.fish

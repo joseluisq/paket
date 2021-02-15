@@ -24,24 +24,31 @@ impl<'a> Actions<'a> {
         let pkgfmt = PkgNameFmt::from(&pkg_name)?;
         let pkg_name = &pkgfmt.get_short_name();
         let pkg_tag = Some(pkgfmt.pkg_tag.as_ref());
-
         let branch_tag = pkg_tag.unwrap_or("");
-        println!("Installing package `{}@{}`...", &pkg_name, branch_tag);
 
-        if self.pkt.pkg_exists(pkg_name) {
-            bail!(
-                "package `{}` is already installed. Try to use the `up` command to upgrade it.",
-                pkg_name
-            );
-        }
+        // Check for package naming convention or directory path
+        let pkg_dir = if let Some(pkg_path) = pkgfmt.get_pkg_path() {
+            println!("Installing package from directory `{:?}`...", pkg_path);
+            pkg_path
+        } else {
+            println!("Installing package `{}@{}`...", &pkg_name, branch_tag);
 
-        self.git.clone(pkg_name, pkg_tag, git_provider)?;
+            if self.pkt.pkg_exists(pkg_name) {
+                bail!(
+                    "package `{}` is already installed. Try to use the `up` command to upgrade it.",
+                    pkg_name
+                );
+            }
 
-        // Process Fish shell package structure
-        let pkg_dir = self.git.base_dir.join(&pkg_name);
-        if !self.pkt.pkg_exists(pkg_name) {
-            bail!("package `{}` was not cloned with success.", pkg_name);
-        }
+            self.git.clone(pkg_name, pkg_tag, git_provider)?;
+
+            // Process Fish shell package structure
+            let pkg_dir = self.git.base_dir.join(&pkg_name);
+            if !self.pkt.pkg_exists(pkg_name) {
+                bail!("package `{}` was not cloned with success.", pkg_name);
+            }
+            pkg_dir
+        };
 
         self.pkt
             .read_pkg_dir(&pkg_dir, &pkg_name, |src_path, dest_path| {
@@ -60,8 +67,7 @@ impl<'a> Actions<'a> {
         }
 
         println!("Package was installed successfully.");
-        println!("Now reload your current Fish shell session or source your config file:");
-        println!("source ~/.config/fish/config.fish");
+        println!("Now just reload your current Fish shell session.");
 
         Ok(())
     }

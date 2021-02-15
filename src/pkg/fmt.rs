@@ -1,4 +1,6 @@
-use crate::result::Result;
+use std::path::PathBuf;
+
+use crate::result::{Context, Result};
 
 /// Defaines the package name format based on a fomatted package name string.
 pub struct PkgNameFmt {
@@ -8,6 +10,8 @@ pub struct PkgNameFmt {
     pub pkg_name: String,
     /// Contain the package version name (Git branch or tag).
     pub pkg_tag: String,
+
+    pkg_path: Option<PathBuf>,
 }
 
 impl<'a> PkgNameFmt {
@@ -15,7 +19,36 @@ impl<'a> PkgNameFmt {
     /// Format: username/package_name@(tag_name|branch_name)
     pub fn from(pkg_name: &'a str) -> Result<Self> {
         if pkg_name.is_empty() {
-            bail!("provide a package name.");
+            bail!("provide a package name or a local Git package directory path.");
+        }
+
+        // Default Git tag for package repository
+        let mut pkg_tag = "master";
+
+        // Check if current `pkg_name` is an Git based package path directory
+        let pkg_path = std::path::Path::new(pkg_name);
+        if pkg_path.is_dir() {
+            let pkg_path = pkg_path
+                .canonicalize()
+                .with_context(|| "Package path directory doesn't exist or inaccessible.")?;
+
+            // TODO: we could also check here if current dir path is a valid git repository
+
+            // We take the dirname as package name
+            let pkg_name = match pkg_path.iter().last() {
+                Some(v) => v.to_str().unwrap().into(),
+                None => bail!(
+                    "directory name for path \"{:?}\" was not determined",
+                    pkg_path,
+                ),
+            };
+
+            return Ok(Self {
+                user_name: String::new(),
+                pkg_name,
+                pkg_tag: pkg_tag.into(),
+                pkg_path: Some(pkg_path),
+            });
         }
 
         let pkg_parts: Vec<&str> = pkg_name.splitn(2, '/').collect();
@@ -25,27 +58,32 @@ impl<'a> PkgNameFmt {
             );
         }
 
-        let username = pkg_parts[0].trim().to_string();
+        let username = pkg_parts[0].trim();
         let pkg_name_parts: Vec<&str> = pkg_parts[1].splitn(2, '@').collect();
         if username.is_empty() || pkg_name_parts.is_empty() {
             bail!("provide a valid user and package name format. E.g username/package_name");
         }
 
-        let pkg_name = pkg_name_parts[0].trim().to_string();
+        let pkg_name = pkg_name_parts[0].trim();
         if pkg_name.is_empty() {
             bail!("provide a valid package name value. E.g username/package_name");
         }
 
-        let mut pkg_tag = "master".to_string();
         if pkg_name_parts.len() == 2 && !pkg_name_parts[1].is_empty() {
-            pkg_tag = pkg_name_parts[1].trim().to_string();
+            pkg_tag = pkg_name_parts[1].trim();
         }
 
         Ok(Self {
-            user_name: username,
-            pkg_name,
-            pkg_tag,
+            user_name: username.into(),
+            pkg_name: pkg_name.into(),
+            pkg_tag: pkg_tag.into(),
+            pkg_path: None,
         })
+    }
+
+    /// Return if the current package is a valid Git-based package directory path.
+    pub fn get_pkg_path(&self) -> Option<PathBuf> {
+        self.pkg_path.clone()
     }
 
     /// Return the user and package name concatenated. E.g `username/package_name`.
