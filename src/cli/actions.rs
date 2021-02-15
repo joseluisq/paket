@@ -26,7 +26,7 @@ impl<'a> Actions<'a> {
         let pkg_tag = Some(pkgfmt.pkg_tag.as_ref());
         let branch_tag = pkg_tag.unwrap_or("");
 
-        // Check for package naming convention or directory path
+        // Check for a local package (directory path) or a remote one
         let pkg_dir = if let Some(pkg_path) = pkgfmt.get_pkg_path() {
             println!("Installing package from directory `{:?}`...", pkg_path);
             pkg_path
@@ -40,9 +40,9 @@ impl<'a> Actions<'a> {
                 );
             }
 
+            // Clone the remote repository
             self.git.clone(pkg_name, pkg_tag, git_provider)?;
 
-            // Process Fish shell package structure
             let pkg_dir = self.git.base_dir.join(&pkg_name);
             if !self.pkt.pkg_exists(pkg_name) {
                 bail!("package `{}` was not cloned with success.", pkg_name);
@@ -50,6 +50,7 @@ impl<'a> Actions<'a> {
             pkg_dir
         };
 
+        // Process Fish shell package structure
         self.pkt
             .read_pkg_dir(&pkg_dir, &pkg_name, |src_path, dest_path| {
                 fs::copy(src_path, dest_path)?;
@@ -77,28 +78,34 @@ impl<'a> Actions<'a> {
         let pkgfmt = PkgNameFmt::from(&pkg_name)?;
         let pkg_name = &pkgfmt.get_short_name();
         let pkg_tag = Some(pkgfmt.pkg_tag.as_ref());
-
         let branch_tag = pkg_tag.unwrap_or("");
-        println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
 
-        if !self.pkt.pkg_exists(pkg_name) {
-            bail!(
+        // Check for a local package (directory path) or a remote one
+        let pkg_dir = if let Some(pkg_path) = pkgfmt.get_pkg_path() {
+            println!("Updating package from directory `{:?}`...", pkg_path);
+            pkg_path
+        } else {
+            println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
+
+            if !self.pkt.pkg_exists(pkg_name) {
+                bail!(
                 "package `{}` is not installed. Try to use the `add` command to install it first.",
                 pkg_name
-            );
-        }
+                )
+            }
 
-        self.git.fetch(pkg_name, pkg_tag)?;
-        self.git.checkout(pkg_name, Some("FETCH_HEAD"))?;
+            // Fetch remote repository references and checkout
+            self.git.fetch(pkg_name, pkg_tag)?;
+            self.git.checkout(pkg_name, Some("FETCH_HEAD"))?;
+
+            self.git
+                .base_dir
+                .join(&pkg_name)
+                .canonicalize()
+                .with_context(|| format!("package `{}` was not updated properly.", pkg_name))?
+        };
 
         // Process Fish shell package structure
-        let pkg_dir = self
-            .git
-            .base_dir
-            .join(&pkg_name)
-            .canonicalize()
-            .with_context(|| format!("package `{}` was not updated properly.", pkg_name))?;
-
         self.pkt
             .read_pkg_dir(&pkg_dir, &pkg_name, |src_path, dest_path| {
                 fs::copy(src_path, dest_path)?;
@@ -116,8 +123,7 @@ impl<'a> Actions<'a> {
         }
 
         println!("Package was updated successfully.");
-        println!("Now reload your current Fish shell session or source your config file:");
-        println!("source ~/.config/fish/config.fish");
+        println!("Now just reload your current Fish shell session.");
 
         Ok(())
     }
