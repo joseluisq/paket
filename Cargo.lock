@@ -68,12 +68,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cc"
-version = "1.0.66"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c0496836a84f8d0495758516b8621a622beb77c0fed418570e50764093ced48"
-
-[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -470,11 +464,10 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.15.9"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de94457a09609f33fec5e7fceaf907488967c6c7c75d64da6a7ce6ffdb8b5abd"
+checksum = "c3d39c47be321239a7b3d232d733e58b257c6727167e61ee18c87cd2fa2b5b1b"
 dependencies = [
- "cc",
  "cfg-if",
  "core-foundation-sys",
  "doc-comment",
