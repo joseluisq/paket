@@ -18,14 +18,14 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 
 ## Install
 
-- Docker Alpine 3.11 image: [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
+- Docker image using latest Alpine: [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
 - Release binaries for Linux/Macos amd64: [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
 
 ## Usage
 
 ```sh
 ~> paket --help
-paket 0.0.0
+paket 0.1.0-beta.4
 A simple package manager for the Fish shell 📦
 
 USAGE:
@@ -42,12 +42,22 @@ SUBCOMMANDS:
     up      Update an existing package
 ```
 
-#### Examples
+### Examples
+
+#### Remote packages
 
 ```sh
 ~> paket add joseluisq/gitnow@2.4.0
 ~> paket up joseluisq/gitnow@2.5.1
 ~> paket rm joseluisq/gitnow
+```
+
+#### Local packages
+
+```sh
+~> paket add ~/some-dir/my-pckage-dir
+~> paket up ~/some-dir/my-pckage-dir
+~> paket rm ~/some-dir/my-pckage-dir
 ```
 
 ## Paket file
@@ -118,11 +128,11 @@ Because its a WIP repository some functionalies are missing right now. So feel f
 - [x] Remove command.
 - [x] Dispatch Fish shell `paket_install`, `paket_update`, `paket_uninstall` events.
 - [x] Add package file `paket.toml` support.
+- [x] Add support for Bitbucket, Gitlab, etc. Github for now.
+- [x] Ability to install, update and remove packages from local.
 - [ ] Dependencies support.
 - [ ] Prevent unnecessary clones for same versions (tags)
-- [ ] Ability to install package from local.
 - [ ] Add configuration file `~/paket.toml` support.
-- [ ] Add support for Bitbucket, Gitlab, etc. Github for now.
 - [ ] ?
 
 ## Contributions
