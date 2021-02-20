@@ -14,12 +14,12 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 - Package file support ([`paket.toml`](#package-file)) to describe a package and copy optional non `.fish` files.
 - Trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) when a package is installed, updated or uninstalled.
 - It runs only on top of a Fish shell session (Fish parent process).
-- Docker support.
+- First class Docker support.
 
-## Install
+## Download/Install
 
-- Docker image using latest Alpine: [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
-- Release binaries for Linux/Macos amd64: [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
+- Docker image using latest Alpine → [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
+- Release binaries for Linux/Macos amd64 → [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
 
 ## Usage
 
@@ -83,55 +83,83 @@ keywords = [
     "github"
 ]
 
-# Copy extra non Fish files
+# Copy extra non Fish files (optional)
 include = [
     "conf.d/.gitnow"
 ]
+
+# Paket events which can trigger Fish shell events (optional)
+# Use the format `[package_name]_[event_name]` without the brackets and spaces (underscores instead).
+# Also make sure that every value match with your package's Fish shell event (--on-event).
+[events]
+after-install = "gitnow_install"
+after-update = "gitnow_update"
+before-uninstall = "gitnow_uninstall"
 
 [dependencies]
 ```
 
 ## Fish shell events
 
-Since Fish shell supports [events](https://fishshell.com/docs/current/cmds/emit.html), Paket will emit the following ones:
+Paket has few events which can be used to trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) defined in your package.
 
-- `paket_install`: After a package gets installed.
-- `paket_update`: After a package gets updated.
-- `paket_uninstall`: After a package gets uninstalled.
+- `after-install`: After a package is installed.
+- `after-update`: After a package is updated.
+- `before-uninstall`: Before a package is uninstalled.
 
-### Events definition
+### Events definition and format
 
-Just appending a `-e` (`--on-event`) flag to your function(s) tells Fish to run it when the specified named event gets emitted.
+Appending a `-e` or `--on-event` flag to your function(s) tells Fish to run it when the specified named event is emitted.
 
-Examples:
+Use the format `[package_name]_[event_name]` without the brackets and spaces (underscores instead).
+Also make sure that every value match with your package's Fish shell event (`--on-event`).
+
+### Package example
+
+Define a `paket.toml` file for your package:
+
+```toml
+[package]
+name = "mypackage"
+version = "0.0.0"
+# ...
+
+# Events (optional)
+[events]
+after-install = "mypackage_install"
+before-uninstall = "mypackage_uninstall"
+```
+
+Optionally you can sign your corresponding functions with the `--on-event` (`-e`) value defined above.
 
 ```fish
 # It will be immediately run after the package is installed
-function __my_package_install -e paket_install
+function __my_package_install -e mypackage_install
     echo "Installing my package..."
 end
 
-# It will be immediately run after the package is uninstalled
-function __my_package_uninstall -e paket_uninstall
+# It will be immediately run before the package is uninstalled
+function __my_package_uninstall -e mypackage_uninstall
     echo "Uninstalling my package..."
 end
 ```
 
-Find out a detailed example on [GitNow](https://github.com/joseluisq/gitnow/blob/master/conf.d/gitnow.fish) repository.
+Find out an example on [GitNow](https://github.com/joseluisq/gitnow/blob/master/conf.d/gitnow.fish) repository.
 
 ## TODO
 
-Because its a WIP repository some functionalies are missing right now. So feel free to contribute.
+Some features are missing right now but it covers the most of functionalities needed to be usable. However feel free to contribute.
 
 - [x] Add command.
 - [x] Update command.
 - [x] Remove command.
-- [x] Dispatch Fish shell `paket_install`, `paket_update`, `paket_uninstall` events.
-- [x] Add package file `paket.toml` support.
-- [x] Add support for Bitbucket, Gitlab, etc. Github for now.
-- [x] Ability to install, update and remove packages from local.
+- [x] Add package file `paket.toml` support which describes a package.
+- [x] Add support for Bitbucket, Gitlab and Github (default).
+- [x] Dispatch Fish shell events when a package is installed, updated or uninstalled.
+- [x] Define Paket events via `paket.toml` file.
+- [x] Ability to install, update and remove packages from local repositories.
+- [ ] Prevent unnecessary clones for same versions (branches/tags)
 - [ ] Dependencies support.
-- [ ] Prevent unnecessary clones for same versions (tags)
 - [ ] Add configuration file `~/paket.toml` support.
 - [ ] ?
 
