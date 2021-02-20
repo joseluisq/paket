@@ -55,11 +55,11 @@ impl<'a> Actions<'a> {
         };
 
         // Process Fish shell package structure and read the Packet manifest
-        let manifest = self
-            .paket
-            .read_pkg_dir_with_manifest(&pkg_dir, &pkg_name, is_pkg_local)?;
+        let manifest =
+            self.paket
+                .read_pkg_dir_with_manifest(&pkg_dir, &pkg_fmt.pkg_name, is_pkg_local)?;
 
-        if let (Some(toml_pkg), Some(toml_events)) = (manifest.package, manifest.events) {
+        if let Some(toml_pkg) = manifest.package {
             // Copy all corresponding package files to Fish shell directories
             self.paket
                 .scan_pkg_dir(&pkg_dir, &toml_pkg.include, |src, dest| {
@@ -68,8 +68,12 @@ impl<'a> Actions<'a> {
                 })?;
 
             // Emit an `after_install` Fish shell event if there is an associated Paket event
-            self.paket
-                .emit_event(&toml_pkg.name, &toml_events, PaketEvents::AfterInstall)?;
+            if let Some(toml_events) = manifest.events {
+                self.paket
+                    .emit_event(&toml_pkg.name, &toml_events, PaketEvents::AfterInstall)?;
+            }
+        } else {
+            bail!("`paket.toml` file could not be parsed correctly.")
         };
 
         println!("Package was installed successfully.");
@@ -116,11 +120,11 @@ impl<'a> Actions<'a> {
         };
 
         // Process Fish shell package structure and read the Packet manifest
-        let manifest = self
-            .paket
-            .read_pkg_dir_with_manifest(&pkg_dir, &pkg_name, is_pkg_local)?;
+        let manifest =
+            self.paket
+                .read_pkg_dir_with_manifest(&pkg_dir, &pkg_fmt.pkg_name, is_pkg_local)?;
 
-        if let (Some(toml_pkg), Some(toml_events)) = (manifest.package, manifest.events) {
+        if let Some(toml_pkg) = manifest.package {
             // Copy all corresponding package files to Fish shell directories
             self.paket
                 .scan_pkg_dir(&pkg_dir, &toml_pkg.include, |src, dest| {
@@ -129,8 +133,12 @@ impl<'a> Actions<'a> {
                 })?;
 
             // Emit an `after_update` Fish shell event if there is an associated Paket event
-            self.paket
-                .emit_event(&toml_pkg.name, &toml_events, PaketEvents::AfterUpdate)?;
+            if let Some(toml_events) = manifest.events {
+                self.paket
+                    .emit_event(&toml_pkg.name, &toml_events, PaketEvents::AfterUpdate)?;
+            }
+        } else {
+            bail!("`paket.toml` file could not be parsed correctly.")
         };
 
         println!("Package was updated successfully.");
@@ -150,12 +158,12 @@ impl<'a> Actions<'a> {
         let pkg_dir = if is_pkg_path {
             let pkg_path = pkg_path.unwrap_or_default();
             println!(
-                "Removing installed package using directory `{}` as reference...",
+                "Uninstalling package using directory `{}` as reference...",
                 pkg_path.display()
             );
             pkg_path
         } else {
-            println!("Removing package `{}`...", &pkg_name);
+            println!("Uninstalling package `{}`...", &pkg_name);
 
             // Process Fish shell package structure
             let pkg_dir = self.git.base_dir.join(&pkg_name);
@@ -170,14 +178,19 @@ impl<'a> Actions<'a> {
         };
 
         // Process Fish shell package structure and read the Packet manifest
-        let manifest = self
-            .paket
-            .read_pkg_dir_with_manifest(&pkg_dir, &pkg_name, is_pkg_path)?;
-
-        if let (Some(toml_pkg), Some(toml_events)) = (manifest.package, manifest.events) {
-            // Emit a `before_uninstall` Fish shell event if there is an associated Paket event
+        let manifest =
             self.paket
-                .emit_event(&toml_pkg.name, &toml_events, PaketEvents::BeforeUninstall)?;
+                .read_pkg_dir_with_manifest(&pkg_dir, &pkg_fmt.pkg_name, is_pkg_path)?;
+
+        if let Some(toml_pkg) = manifest.package {
+            // Emit an `after_update` Fish shell event if there is an associated Paket event
+            if let Some(toml_events) = manifest.events {
+                self.paket.emit_event(
+                    &toml_pkg.name,
+                    &toml_events,
+                    PaketEvents::BeforeUninstall,
+                )?;
+            }
 
             // Remove all corresponding package files from Fish shell directories
             self.paket
@@ -187,6 +200,8 @@ impl<'a> Actions<'a> {
                     }
                     Ok(())
                 })?;
+        } else {
+            bail!("`paket.toml` file could not be parsed correctly.")
         };
 
         if !is_pkg_path {

@@ -147,7 +147,7 @@ impl<'a> Paket {
         pkg_dir.exists() && pkg_dir.is_dir() && pkg_dir.read_dir().unwrap().next().is_some()
     }
 
-    /// Read a package directory along with its Paket manifest file (paket.toml).
+    /// Read a valid package directory along with its Paket manifest file (paket.toml).
     pub fn read_pkg_dir_with_manifest(
         &'a self,
         pkg_dir: &PathBuf,
@@ -156,6 +156,11 @@ impl<'a> Paket {
     ) -> Result<config::TomlManifest> {
         let pkg_dir = pkg_dir.clone();
         let pkg_toml_path = pkg_dir.join("paket.toml").canonicalize().with_context(|| {
+            let pkg_name = if is_local {
+                pkg_dir.as_os_str().to_str().unwrap_or_default()
+            } else {
+                pkg_name
+            };
             format!(
                 "`paket.toml` file was not found on package `{}` or inaccessible.",
                 pkg_name
@@ -189,7 +194,7 @@ impl<'a> Paket {
         // checking for remote packages only
         if !is_local && pkg_name != toml_pkg.name {
             bail!(
-                "`{}` package name in `paket.toml` doesn't match with given input package name.",
+                "package name `{}` in `paket.toml` doesn't match with given input package name.",
                 pkg_name
             )
         }
@@ -309,9 +314,8 @@ impl<'a> Paket {
                 let pkgname_e = event_parts[0].trim_start();
                 if pkgname_e != pkgname {
                     bail!(
-                        "package `{}` name in event is different than the base package name `{}`.",
-                        pkgname_e,
-                        pkgname
+                        "Paket event value `{}` defined in `paket.toml` has invalid format. \nUse the format `[package_name]_[event_name]` without the brackets and spaces (underscores instead). \nAlso make sure that the whole value matches with your package's Fish shell event (--on-event).",
+                        pkg_event_val
                     );
                 }
 
