@@ -24,11 +24,11 @@ path = "src/lib.rs"
 [dependencies]
 dirs = "3.0"
 toml = "0.5"
-structopt = "0.3"
+structopt = { version = "0.3", default-features = false }
 anyhow = "1.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_ignored = "0.1"
-semver = { version = "0.10", features = ["serde"] }
+semver = { version = "0.10", default-features = false, features = ["serde"] }
 sysinfo = "0.16"
 libc = "0.2"
 
