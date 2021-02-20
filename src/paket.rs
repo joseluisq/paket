@@ -9,6 +9,13 @@ use crate::helpers::{file as helper_file, process, Command};
 use crate::pkg::config;
 use crate::result::{Context, Result};
 
+/// Packet events supported transferable to Fish shell events.
+pub enum PaketEvents {
+    AfterInstall,
+    AfterUpdate,
+    BeforeUninstall,
+}
+
 /// Defines directory paths used by `Paket`.
 pub struct PaketPaths {
     /// User configuration directory.
@@ -33,7 +40,7 @@ pub struct Paket {
     pub opts: CommandOpts,
 }
 
-impl Paket {
+impl<'a> Paket {
     /// Create a new instance of `Paket`.
     pub fn new() -> Result<Self> {
         // Check if Git and Fish shell binaries are available on system
@@ -128,24 +135,25 @@ impl Paket {
     }
 
     /// Just run the `Paket` application.
-    pub fn run(&self) -> Result {
-        App::run(&self)?;
+    pub fn run(&'a mut self) -> Result {
+        App::run(self)?;
 
         Ok(())
     }
 
     /// Verify if a package directory path exists and it's not empty.
-    pub fn pkg_exists(&self, pkg_name: &str) -> bool {
+    pub fn pkg_exists(&'a self, pkg_name: &str) -> bool {
         let pkg_dir = self.paths.paket_dir.join(pkg_name);
         pkg_dir.exists() && pkg_dir.is_dir() && pkg_dir.read_dir().unwrap().next().is_some()
     }
 
-    /// Read a Fish package directory and call a function passing a source file
-    /// path per every read along with its equivalent destination path.
-    pub fn read_pkg_dir<F>(&self, pkg_dir: &PathBuf, pkg_name: &str, mut func: F) -> Result
-    where
-        F: FnMut(&PathBuf, &PathBuf) -> Result,
-    {
+    /// Read a package directory along with its Paket manifest file (paket.toml).
+    pub fn read_pkg_dir_with_manifest(
+        &'a self,
+        pkg_dir: &PathBuf,
+        pkg_name: &str,
+        is_local: bool,
+    ) -> Result<config::TomlManifest> {
         let pkg_dir = pkg_dir.clone();
         let pkg_toml_path = pkg_dir.join("paket.toml").canonicalize().with_context(|| {
             format!(
@@ -164,18 +172,46 @@ impl Paket {
         })?;
 
         for key in unused {
-            println!("unused manifest key: {}", key);
+            println!(
+                "Warning: unused Paket manifest key `{}` or unsuported.",
+                key
+            );
         }
 
         // Read `package` toml section
         let toml_pkg = if manifest.package.is_some() {
-            manifest.package.unwrap()
+            manifest.package.clone().unwrap()
         } else {
             bail!("`paket.toml` file is empty or can not be read.")
         };
 
+        // Verify if package input name is equal to manifest package name
+        // checking for remote packages only
+        if !is_local && pkg_name != toml_pkg.name {
+            bail!(
+                "`{}` package name in `paket.toml` doesn't match with given input package name.",
+                pkg_name
+            )
+        }
+
+        Ok(manifest)
+    }
+
+    /// Read a given package directory with its extra include directories and
+    /// then call a function passing a source file path per every read along with
+    /// its equivalent destination file path.
+    pub fn scan_pkg_dir<F>(
+        &'a self,
+        pkg_dir: &PathBuf,
+        pkg_include: &Option<Vec<String>>,
+        mut func: F,
+    ) -> Result
+    where
+        F: FnMut(&PathBuf, &PathBuf) -> Result,
+    {
         // Read `include` toml property of `package` section
-        let pkg_include = &toml_pkg.include.unwrap_or_default();
+        let pkg_include = &pkg_include.clone().unwrap_or_default();
+
         // TODO: support Git glob-like file's reading on `include` toml array.
         // Plain file paths only for now.
 
@@ -186,10 +222,10 @@ impl Paket {
         let completions_dir = &self.paths.fish_completions_dir;
         let functions_dir = &self.paths.fish_functions_dir;
 
-        let mut stack_paths = vec![pkg_dir];
+        let mut stack_paths = vec![pkg_dir.clone()];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
-        // NOTE: copy only files contained on "conf.d", "completions" or "functions" directories
+        // Copy only files contained on "conf.d", "completions" or "functions" directories
         while let Some(working_path) = stack_paths.pop() {
             for entry in fs::read_dir(working_path)? {
                 let path = entry?.path();
@@ -246,6 +282,48 @@ impl Paket {
                             bail!("failed to get file name for path {}", path.display());
                         }
                     }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Process a Paket event definition, validating it with manifest file and
+    /// finally dispatching the corresponding Fish shell event.
+    pub fn emit_event(
+        &self,
+        pkgname: &str,
+        events: &config::TomlEvents,
+        event_type: PaketEvents,
+    ) -> Result {
+        let pkg_event_val = match event_type {
+            PaketEvents::AfterInstall => &events.after_install,
+            PaketEvents::AfterUpdate => &events.after_update,
+            PaketEvents::BeforeUninstall => &events.before_uninstall,
+        };
+
+        if let Some(pkg_event_val) = pkg_event_val {
+            let event_parts = pkg_event_val.splitn(2, '_').collect::<Vec<&str>>();
+            if !event_parts.is_empty() {
+                let pkgname_e = event_parts[0].trim_start();
+                if pkgname_e != pkgname {
+                    bail!(
+                        "package `{}` name in event is different than the base package name `{}`.",
+                        pkgname_e,
+                        pkgname
+                    );
+                }
+
+                let eventname = event_parts[1].trim_end();
+                let emit_event = format!("emit {}_{}", pkgname, eventname);
+                let out = Command::new("fish", None)
+                    .arg("-c")
+                    .arg(emit_event)
+                    .execute()?;
+
+                if !out.is_empty() {
+                    print!("{}", out);
                 }
             }
         }

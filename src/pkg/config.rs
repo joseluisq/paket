@@ -16,12 +16,20 @@ pub struct TomlDependency {
     pub rev: Option<String>,
     pub package: Option<String>,
 }
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[serde(rename_all = "kebab-case")]
+pub struct TomlEvents {
+    pub after_install: Option<String>,
+    pub after_update: Option<String>,
+    pub before_uninstall: Option<String>,
+}
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct TomlManifest {
     pub package: Option<Box<TomlPackage>>,
     pub dependencies: Option<BTreeMap<String, TomlDependency>>,
+    pub events: Option<Box<TomlEvents>>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -37,6 +45,10 @@ pub struct TomlPackage {
     pub categories: Option<Vec<String>>,
     pub license: Option<String>,
     pub repository: Option<String>,
+
+    // Events
+    pub events: Option<TomlEvents>,
+    // TODO: Dependencies
 }
 
 pub fn read_pkg_file(path: &Path) -> Result<toml::Value> {
