@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 
-/// A simple package manager for the Fish shell 📦
+/// A simple and fast package manager for the Fish shell 📦
 #[derive(Debug, StructOpt)]
 pub struct CommandOpts {
     #[structopt(subcommand)]
@@ -9,7 +9,7 @@ pub struct CommandOpts {
 
 #[derive(Debug, StructOpt)]
 pub enum Commands {
-    /// Add a new package from a local or remote repository
+    /// Install a new package from a local or remote repository.
     #[structopt(name = "add")]
     Add {
         #[structopt(short = "p", long, default_value = "github")]
@@ -19,14 +19,14 @@ pub enum Commands {
         pkg_name: String,
     },
 
-    /// Update an existing package
+    /// Update an existing package from a local or remote repository.
     #[structopt(name = "up")]
     Update {
         /// Package name. E.g joseluisq/gitnow
         pkg_name: String,
     },
 
-    /// Remove an existing package
+    /// Uninstall an existing package from a local or remote repository.
     #[structopt(name = "rm")]
     Remove {
         /// Package name. E.g joseluisq/gitnow
