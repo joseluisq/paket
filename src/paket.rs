@@ -1,6 +1,6 @@
-use std::collections::BTreeSet;
 use std::fs;
 use std::path::PathBuf;
+use std::{collections::BTreeSet, path::Path};
 use structopt::StructOpt;
 use sysinfo::{ProcessExt, System, SystemExt};
 
@@ -150,11 +150,11 @@ impl<'a> Paket {
     /// Read a valid package directory along with its Paket manifest file (paket.toml).
     pub fn read_pkg_dir_with_manifest(
         &'a self,
-        pkg_dir: &PathBuf,
+        pkg_dir: &Path,
         pkg_name: &str,
         is_local: bool,
     ) -> Result<config::TomlManifest> {
-        let pkg_dir = pkg_dir.clone();
+        let pkg_dir = pkg_dir.to_path_buf();
         let pkg_toml_path = pkg_dir.join("paket.toml").canonicalize().with_context(|| {
             let pkg_name = if is_local {
                 pkg_dir.as_os_str().to_str().unwrap_or_default()
@@ -207,7 +207,7 @@ impl<'a> Paket {
     /// its equivalent destination file path.
     pub fn scan_pkg_dir<F>(
         &'a self,
-        pkg_dir: &PathBuf,
+        pkg_dir: PathBuf,
         pkg_include: &Option<Vec<String>>,
         mut func: F,
     ) -> Result
@@ -227,7 +227,7 @@ impl<'a> Paket {
         let completions_dir = &self.paths.fish_completions_dir;
         let functions_dir = &self.paths.fish_functions_dir;
 
-        let mut stack_paths = vec![pkg_dir.clone()];
+        let mut stack_paths = vec![pkg_dir];
         let path_suffixes = vec!["conf.d", "completions", "functions"];
 
         // Copy only files contained on "conf.d", "completions" or "functions" directories

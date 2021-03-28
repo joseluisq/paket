@@ -62,7 +62,7 @@ impl<'a> Actions<'a> {
         if let Some(toml_pkg) = manifest.package {
             // Copy all corresponding package files to Fish shell directories
             self.paket
-                .scan_pkg_dir(&pkg_dir, &toml_pkg.include, |src, dest| {
+                .scan_pkg_dir(pkg_dir, &toml_pkg.include, |src, dest| {
                     fs::copy(src, dest)?;
                     Ok(())
                 })?;
@@ -127,7 +127,7 @@ impl<'a> Actions<'a> {
         if let Some(toml_pkg) = manifest.package {
             // Copy all corresponding package files to Fish shell directories
             self.paket
-                .scan_pkg_dir(&pkg_dir, &toml_pkg.include, |src, dest| {
+                .scan_pkg_dir(pkg_dir, &toml_pkg.include, |src, dest| {
                     fs::copy(src, dest)?;
                     Ok(())
                 })?;
@@ -194,7 +194,7 @@ impl<'a> Actions<'a> {
 
             // Remove all corresponding package files from Fish shell directories
             self.paket
-                .scan_pkg_dir(&pkg_dir, &toml_pkg.include, |_, dest| {
+                .scan_pkg_dir(pkg_dir.clone(), &toml_pkg.include, |_, dest| {
                     if dest.exists() {
                         fs::remove_file(dest)?;
                     }
