@@ -31,7 +31,7 @@ anyhow = "1.0"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_ignored = "0.1"
 semver = { version = "0.10", default-features = false, features = ["serde"] }
-sysinfo = "0.16"
+sysinfo = "0.18"
 libc = "0.2"
 
 [profile.release]
