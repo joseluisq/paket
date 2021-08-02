@@ -170,6 +170,9 @@ kind: pipeline
 type: docker
 name: notification
 
+clone:
+  disable: true
+
 platform:
   os: linux
   arch: amd64
