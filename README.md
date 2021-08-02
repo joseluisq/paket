@@ -4,6 +4,8 @@
 
 This is an *WIP* Git-based *"package manager"* for Fish shell which is under **active** development.
 
+**Note:** Some features are missing right now but it covers the most of functionalities needed to be usable. However feel free to contribute. See [TODO](#todo) list.
+
 ## Features
 
 - Rely only on [Git](https://git-scm.com/) binary and its well known features (clone, fetch, checkout, pull, tag, etc).
@@ -147,8 +149,6 @@ end
 Find out an example on [GitNow](https://github.com/joseluisq/gitnow/blob/master/conf.d/gitnow.fish) repository.
 
 ## TODO
-
-Some features are missing right now but it covers the most of functionalities needed to be usable. However feel free to contribute.
 
 - [x] Add command.
 - [x] Update command.

@@ -19,7 +19,7 @@ steps:
       - ./target
 
 - name: test
-  image: joseluisq/rust-linux-darwin-builder:1.51.0
+  image: joseluisq/rust-linux-darwin-builder:1.54.0
   commands:
     - make test
 
@@ -62,12 +62,12 @@ platform:
 
 steps:
 - name: test
-  image: joseluisq/rust-linux-darwin-builder:1.51.0
+  image: joseluisq/rust-linux-darwin-builder:1.54.0
   commands:
     - make test
 
 - name: release-linux
-  image: joseluisq/rust-linux-darwin-builder:1.51.0
+  image: joseluisq/rust-linux-darwin-builder:1.54.0
   commands:
     - make prod.release.linux
 
@@ -116,7 +116,7 @@ steps:
     checksum_dest: ./release/paket-${DRONE_TAG}-x86_64-unknown-linux-musl-SHA256SUM
 
 - name: release-darwin
-  image: joseluisq/rust-linux-darwin-builder:1.51.0
+  image: joseluisq/rust-linux-darwin-builder:1.54.0
   commands:
     - make prod.release.darwin
 
@@ -133,6 +133,8 @@ steps:
 
 - name: release-archive-check
   image: alpine:3.12
+
+LABEL version="${PAKET_VERSION}" \
   commands:
   - cd ./release
   - cat paket-${DRONE_TAG}-x86_64-unknown-linux-musl-SHA256SUM paket-${DRONE_TAG}-x86_64-apple-darwin-SHA256SUM > paket-${DRONE_TAG}-x86_64-SHA256SUM
