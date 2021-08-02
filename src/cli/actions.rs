@@ -20,7 +20,7 @@ impl<'a> Actions<'a> {
 
     /// Command action to install a new package and invoke a `paket_install` Fish shell event.
     pub fn install(&mut self, pkg_name: &str, git_provider: &str) -> Result {
-        let pkg_fmt = PkgNameFmt::from(&pkg_name)?;
+        let pkg_fmt = PkgNameFmt::from(pkg_name)?;
         let pkg_name = &pkg_fmt.get_short_name();
         let pkg_tag = Some(pkg_fmt.pkg_tag.as_ref());
         let branch_tag = pkg_tag.unwrap_or("");
@@ -84,7 +84,7 @@ impl<'a> Actions<'a> {
 
     /// Command action to update an existing package
     pub fn update(&mut self, pkg_name: &str) -> Result {
-        let pkg_fmt = PkgNameFmt::from(&pkg_name)?;
+        let pkg_fmt = PkgNameFmt::from(pkg_name)?;
         let pkg_name = &pkg_fmt.get_short_name();
         let pkg_tag = Some(pkg_fmt.pkg_tag.as_ref());
         let branch_tag = pkg_tag.unwrap_or("");
@@ -149,7 +149,7 @@ impl<'a> Actions<'a> {
 
     /// Command action to remove an existing package and invoke a `paket_uninstall` Fish shell event.
     pub fn remove(&mut self, pkg_name: &str) -> Result {
-        let pkg_fmt = PkgNameFmt::from(&pkg_name)?;
+        let pkg_fmt = PkgNameFmt::from(pkg_name)?;
         let pkg_name = &pkg_fmt.get_short_name();
         let pkg_path = pkg_fmt.get_pkg_path();
         let is_pkg_path = pkg_path.is_some();

@@ -2,6 +2,7 @@ use structopt::StructOpt;
 
 /// A simple and fast package manager for the Fish shell 📦
 #[derive(Debug, StructOpt)]
+#[structopt(about, author)]
 pub struct CommandOpts {
     #[structopt(subcommand)]
     pub commands: Option<Commands>,

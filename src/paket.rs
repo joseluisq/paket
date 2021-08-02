@@ -251,10 +251,10 @@ impl<'a> Paket {
 
                     let mut fish_dir = snippets_dir;
                     if parent.ends_with("completions") {
-                        fish_dir = &completions_dir;
+                        fish_dir = completions_dir;
                     }
                     if parent.ends_with("functions") {
-                        fish_dir = &functions_dir;
+                        fish_dir = functions_dir;
                     }
 
                     // call callback function with a source and destination paths
