@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 extern crate paket;
 
 use paket::{Paket, Result};
