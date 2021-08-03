@@ -108,4 +108,24 @@ impl Git {
             .arg("master")
             .execute()
     }
+
+    /// Check if given directory is a valid Git repository returning `Ok` if so or an error otherwise.
+    pub fn check_valid_repo(&mut self, repo_dir: &Path) -> Result<()> {
+        match Command::new(self.exec_name(), Some(&repo_dir.to_path_buf()))
+            .arg("rev-parse")
+            .arg("--is-inside-work-tree")
+            .execute()
+        {
+            Ok(s) => {
+                if s.trim() == "true" {
+                    Ok(())
+                } else {
+                    bail!("package working directory is not inside the repository's work tree")
+                }
+            }
+            Err(err) => {
+                bail!(err)
+            }
+        }
+    }
 }

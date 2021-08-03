@@ -29,6 +29,12 @@ impl<'a> Actions<'a> {
         // Check for a local package (directory path) or a remote one
         let pkg_dir = if let Some(pkg_path) = pkg_fmt.get_pkg_path() {
             is_pkg_local = true;
+
+            // Check if package dir path is a valid Git repository
+            self.git
+                .check_valid_repo(&pkg_path)
+                .with_context(|| "provided package directory is not a valid Git repository.")?;
+
             println!(
                 "Installing package from directory `{}`...",
                 pkg_path.display()
