@@ -1,6 +1,5 @@
 #![deny(warnings)]
-
-extern crate paket;
+#![deny(rust_2018_idioms)]
 
 use paket::{Paket, Result};
 

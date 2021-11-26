@@ -12,7 +12,7 @@ keywords = [
 	"package-manager"
 ]
 categories = ["command-line-utilities"]
-edition = "2018"
+edition = "2021"
 include = ["src/**/*", "Cargo.toml", "Cargo.lock"]
 
 [[bin]]
