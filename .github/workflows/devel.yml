@@ -42,7 +42,7 @@ jobs:
           # Specific Rust channels 
           - build: pinned
             os: ubuntu-20.04
-            rust: 1.56.1
+            rust: 1.57.0
           - build: stable
             os: ubuntu-20.04
             rust: stable
@@ -53,11 +53,11 @@ jobs:
           # advantage of the latest optimizations/compile time improvements.
           - build: linux-musl
             os: ubuntu-20.04
-            rust: nightly
+            rust: stable
             target: x86_64-unknown-linux-musl
           - build: linux-musl-i686
             os: ubuntu-20.04
-            rust: nightly
+            rust: stable
             target: i686-unknown-linux-musl
           - build: linux-musl-arm64
             os: ubuntu-20.04
@@ -65,27 +65,27 @@ jobs:
             target: aarch64-unknown-linux-musl
           - build: linux-gnu
             os: ubuntu-20.04
-            rust: nightly
+            rust: stable
             target: x86_64-unknown-linux-gnu
           - build: linux-gnu-i686
             os: ubuntu-20.04
-            rust: nightly
+            rust: stable
             target: i686-unknown-linux-gnu
           - build: linux-gnu-arm64
             os: ubuntu-20.04
-            rust: nightly
+            rust: stable
             target: aarch64-unknown-linux-gnu
           - build: linux-arm-gnueabihf
             os: ubuntu-20.04
-            rust: nightly
+            rust: stable
             target: arm-unknown-linux-gnueabihf
           - build: macos
             os: macos-11
-            rust: nightly
+            rust: stable
             target: x86_64-apple-darwin
           - build: macos-arm64
             os: macos-11
-            rust: nightly
+            rust: stable
             target: aarch64-apple-darwin
 
     steps:

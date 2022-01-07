@@ -11,26 +11,26 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       upload_url: ${{ steps.release.outputs.upload_url }}
-      sws_version: ${{ env.SWS_VERSION }}
+      paket_version: ${{ env.PAKET_VERSION }}
     steps:
       - name: Get the release version from the tag
         shell: bash
-        if: env.SWS_VERSION == ''
+        if: env.PAKET_VERSION == ''
         run: |
           # Apparently, this is the right way to get a tag name. Really?
           #
           # See: https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/m-p/32167/highlight/true#M1027
-          echo "SWS_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "version is: ${{ env.SWS_VERSION }}"
+          echo "PAKET_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "version is: ${{ env.PAKET_VERSION }}"
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.SWS_VERSION }}
+          tag_name: ${{ env.PAKET_VERSION }}
           draft: true
-          release_name: ${{ env.SWS_VERSION }}
+          release_name: ${{ env.PAKET_VERSION }}
 
   build-release:
     name: build-release
@@ -61,11 +61,11 @@ jobs:
         include:
         - build: linux-musl
           os: ubuntu-20.04
-          rust: nightly
+          rust: stable
           target: x86_64-unknown-linux-musl
         - build: linux-musl-i686
           os: ubuntu-20.04
-          rust: nightly
+          rust: stable
           target: i686-unknown-linux-musl
         - build: linux-musl-arm64
           os: ubuntu-20.04
@@ -73,27 +73,27 @@ jobs:
           target: aarch64-unknown-linux-musl
         - build: linux-gnu
           os: ubuntu-20.04
-          rust: nightly
+          rust: stable
           target: x86_64-unknown-linux-gnu
         - build: linux-gnu-i686
           os: ubuntu-20.04
-          rust: nightly
+          rust: stable
           target: i686-unknown-linux-gnu
         - build: linux-gnu-arm64
           os: ubuntu-20.04
-          rust: nightly
+          rust: stable
           target: aarch64-unknown-linux-gnu
         - build: linux-arm-gnueabihf
           os: ubuntu-20.04
-          rust: nightly
+          rust: stable
           target: arm-unknown-linux-gnueabihf
         - build: macos
           os: macos-11
-          rust: nightly
+          rust: stable
           target: x86_64-apple-darwin
         - build: macos-arm64
           os: macos-11
-          rust: nightly
+          rust: stable
           target: aarch64-apple-darwin
 
     steps:
@@ -162,7 +162,7 @@ jobs:
     - name: Build archive
       shell: bash
       run: |
-        staging="paket-${{ needs.create-release.outputs.sws_version }}-${{ matrix.target }}"
+        staging="paket-${{ needs.create-release.outputs.paket_version }}-${{ matrix.target }}"
         mkdir -p "$staging/"
         mkdir -p bin
 
