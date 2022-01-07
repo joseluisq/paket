@@ -27,8 +27,9 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 
 ```sh
 ~> paket --help
-paket 0.1.0-beta.4
-A simple package manager for the Fish shell 📦
+paket 0.1.1
+Jose Quintana <https://git.io/joseluisq>
+A simple and fast package manager for the Fish shell
 
 USAGE:
     paket [SUBCOMMAND]
@@ -38,10 +39,10 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    add     Add a new package from a local or remote repository
+    add     Install a new package from a local or remote repository
     help    Prints this message or the help of the given subcommand(s)
-    rm      Remove an existing package
-    up      Update an existing package
+    rm      Uninstall an existing package from a local or remote repository
+    up      Update an existing package from a local or remote repository
 ```
 
 ### Examples
