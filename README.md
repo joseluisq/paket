@@ -28,7 +28,7 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 ```sh
 ~> paket --help
 paket 0.1.1
-Jose Quintana <https://git.io/joseluisq>
+Jose Quintana <https://joseluisq.net>
 A simple and fast package manager for the Fish shell
 
 USAGE:
@@ -72,7 +72,7 @@ Here a sample file of [GitNow](https://github.com/joseluisq/gitnow) Fish package
 [package]
 name = "gitnow"
 version = "2.5.1"
-authors = ["Jose Quintana <git.io/joseluisq>"]
+authors = ["Jose Quintana <https://joseluisq.net>"]
 license = "MIT OR Apache-2.0"
 description = "Speed up your Git workflow. 🐠"
 repository = "https://github.com/joseluisq/gitnow"
@@ -174,4 +174,4 @@ Feel free to send some [Pull request](https://github.com/joseluisq/paket/pulls) 
 
 This work is primarily distributed under the terms of both the [MIT license](LICENSE-MIT) and the [Apache License (Version 2.0)](LICENSE-APACHE).
 
-© 2020-present [Jose Quintana](https://git.io/joseluisq)
+© 2020-present [Jose Quintana](https://joseluisq.net)
