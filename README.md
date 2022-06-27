@@ -23,6 +23,21 @@ This is an *WIP* Git-based *"package manager"* for Fish shell which is under **a
 - Docker image using latest Alpine → [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
 - Release binaries for Linux/Macos amd64 → [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
 
+### MacOS
+
+Via [Homebrew](https://brew.sh/) (also Linux)
+
+
+```sh
+brew tap joseluisq/paket
+
+# Just the binary
+brew install paket-bin
+
+# Or build from source
+brew install paket-src
+```
+
 ## Usage
 
 ```sh
