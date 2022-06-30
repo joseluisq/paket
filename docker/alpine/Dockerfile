@@ -9,7 +9,7 @@ LABEL version="${PAKET_VERSION}" \
 
 RUN set -eux \
     && apk --no-cache add fish git less openssh \
-	&& wget --quiet -O /tmp/paket.tar.gz "https://github.com/joseluisq/paket/releases/download/v$PAKET_VERSION/paket-v$PAKET_VERSION-x86_64-unknown-linux-musl.tar.gz"; \
+    && wget --quiet -O /tmp/paket.tar.gz "https://github.com/joseluisq/paket/releases/download/v$PAKET_VERSION/paket-v$PAKET_VERSION-x86_64-unknown-linux-musl.tar.gz"; \
         tar xzvf /tmp/paket.tar.gz; \
         cp paket-v${PAKET_VERSION}-x86_64-unknown-linux-musl/paket /usr/local/bin/; \
         rm -rf /tmp/paket.tar.gz paket-v${PAKET_VERSION}-x86_64-unknown-linux-musl; \

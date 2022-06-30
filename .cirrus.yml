@@ -36,7 +36,7 @@ task:
   only_if: $CIRRUS_TAG != ''
   env:
     RUSTFLAGS: -Dwarnings
-    GITHUB_TOKEN: ENCRYPTED[3c61f00fd4eb13f2d727370312f33201453e9a43fc57766b3ba5d0876a5abc838cf2c111cdaedd3dbf9b8f6e3f154d5b]
+    GITHUB_TOKEN: ENCRYPTED[76e4381e279cd280e037edd458241a150f0037a510ce6e92fa9eefc8c2df2575c8b60b1cdde1c56108dee7c8b7714295]
   setup_script:
     - pkg install -y bash curl jq
     - curl https://sh.rustup.rs -sSf --output rustup.sh

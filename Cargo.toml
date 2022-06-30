@@ -1,6 +1,6 @@
 [package]
 name = "paket"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Jose Quintana <https://joseluisq.net>"]
 license = "MIT OR Apache-2.0"
 description = "A simple and fast package manager for the Fish shell"
