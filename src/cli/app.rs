@@ -4,7 +4,7 @@ use crate::result::Result;
 
 pub struct App {}
 
-impl<'a> App {
+impl App {
     pub fn run(pk: &mut Paket) -> Result {
         let mut actions = Actions::new(pk)?;
         if let Some(commands) = &pk.opts.commands {
