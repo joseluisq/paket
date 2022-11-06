@@ -56,8 +56,7 @@ impl<'a> Paket {
         // Check if `paket` is running on top of a Fish shell session
         let pid = process::getppid().to_string();
         let on_fish = System::new_all()
-            .get_process_by_name("fish")
-            .iter()
+            .processes_by_name("fish")
             .any(|p| p.pid().to_string() == pid);
 
         if !on_fish {
