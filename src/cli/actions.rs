@@ -53,7 +53,7 @@ impl<'a> Actions<'a> {
             // Clone the remote repository
             self.git.clone(pkg_name, pkg_tag, git_provider)?;
 
-            let pkg_dir = self.git.base_dir.join(&pkg_name);
+            let pkg_dir = self.git.base_dir.join(pkg_name);
             if !self.paket.pkg_exists(pkg_name) {
                 bail!("package `{}` was not cloned with success.", pkg_name);
             }
@@ -120,7 +120,7 @@ impl<'a> Actions<'a> {
 
             self.git
                 .base_dir
-                .join(&pkg_name)
+                .join(pkg_name)
                 .canonicalize()
                 .with_context(|| format!("package `{}` was not updated properly.", pkg_name))?
         };
@@ -172,7 +172,7 @@ impl<'a> Actions<'a> {
             println!("Uninstalling package `{}`...", &pkg_name);
 
             // Process Fish shell package structure
-            let pkg_dir = self.git.base_dir.join(&pkg_name);
+            let pkg_dir = self.git.base_dir.join(pkg_name);
             if !self.paket.pkg_exists(pkg_name) {
                 bail!(
                     "package `{}` is not installed or was already removed.",

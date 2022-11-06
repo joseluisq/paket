@@ -245,7 +245,7 @@ impl<'a> Paket {
 
                 // Check for files with allowed directory parents
                 if let Some(parent) = path.parent() {
-                    if !helper_file::has_path_any_suffixes(&parent, &path_suffixes) {
+                    if !helper_file::has_path_any_suffixes(parent, &path_suffixes) {
                         continue;
                     }
 
