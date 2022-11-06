@@ -43,6 +43,7 @@ jobs:
         with:
           push: true
           context: .
+          platforms: linux/amd64,linux/arm64,linux/386
           file: ${{ env.SERVER_DOCKERFILE }}
           tags: ${{ steps.meta_alpine.outputs.tags }}
           build-args: |

@@ -1,4 +1,24 @@
-FROM alpine:3.15
+FROM --platform=$BUILDPLATFORM alpine:3.16 as build
+
+ARG TARGETPLATFORM
+ARG PAKET_VERSION=0.0.0
+ENV PAKET_VERSION=${PAKET_VERSION}
+
+RUN apk --no-cache add ca-certificates tzdata
+RUN set -ex; \
+    case "$TARGETPLATFORM" in \
+        "linux/amd64") target='x86_64-unknown-linux-musl' ;; \
+        "linux/arm64") target='aarch64-unknown-linux-musl' ;; \
+        "linux/386") target='i686-unknown-linux-musl' ;; \
+        *) echo >&2 "error: unsupported $TARGETPLATFORM architecture"; exit 1 ;; \
+    esac; \
+    wget --quiet -O /tmp/paket.tar.gz "https://github.com/joseluisq/paket/releases/download/v${PAKET_VERSION}/paket-v${PAKET_VERSION}-${target}.tar.gz"; \
+    tar xzvf /tmp/paket.tar.gz; \
+    cp paket-v${PAKET_VERSION}-${target}/paket /usr/local/bin/; \
+    rm -rf /tmp/paket.tar.gz paket-v${PAKET_VERSION}-${target}; \
+    chmod +x /usr/local/bin/paket
+
+FROM alpine:3.16
 
 ARG PAKET_VERSION=0.0.0
 ENV PAKET_VERSION=${PAKET_VERSION}
@@ -9,14 +29,10 @@ LABEL version="${PAKET_VERSION}" \
 
 RUN set -eux \
     && apk --no-cache add fish git less openssh \
-    && wget --quiet -O /tmp/paket.tar.gz "https://github.com/joseluisq/paket/releases/download/v$PAKET_VERSION/paket-v$PAKET_VERSION-x86_64-unknown-linux-musl.tar.gz"; \
-        tar xzvf /tmp/paket.tar.gz; \
-        cp paket-v${PAKET_VERSION}-x86_64-unknown-linux-musl/paket /usr/local/bin/; \
-        rm -rf /tmp/paket.tar.gz paket-v${PAKET_VERSION}-x86_64-unknown-linux-musl; \
-        chmod +x /usr/local/bin/paket \
     && rm -rf /var/lib/apt/lists/* \
     && true
 
+COPY --from=build /usr/local/bin/paket /usr/local/bin/
 COPY ./docker/alpine/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
