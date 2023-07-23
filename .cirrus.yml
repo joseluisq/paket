@@ -1,5 +1,5 @@
 freebsd_instance:
-  image: freebsd-12-2-release-amd64
+  image: freebsd-13-1-release-amd64
 
 # Test FreeBSD in a full VM on cirrus-ci.com
 # The binary will be also built in 32-bit mode, but will execute on a
@@ -11,7 +11,7 @@ task:
   env:
     RUSTFLAGS: -Dwarnings
   setup_script:
-    - pkg install -y bash curl
+    - pkg install -y bash
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y --profile minimal --default-toolchain stable
     - . $HOME/.cargo/env
@@ -38,7 +38,7 @@ task:
     RUSTFLAGS: -Dwarnings
     GITHUB_TOKEN: ENCRYPTED[76e4381e279cd280e037edd458241a150f0037a510ce6e92fa9eefc8c2df2575c8b60b1cdde1c56108dee7c8b7714295]
   setup_script:
-    - pkg install -y bash curl jq
+    - pkg install -y bash jq
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y --profile minimal --default-toolchain stable
     - . $HOME/.cargo/env
