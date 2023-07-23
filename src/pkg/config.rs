@@ -1,9 +1,9 @@
 use serde::Deserialize;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use crate::helpers::file;
-use crate::result::Result;
+use crate::result::{Context, Result};
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(rename_all = "kebab-case")]
@@ -51,31 +51,39 @@ pub struct TomlPackage {
     // TODO: Dependencies
 }
 
-pub fn read_pkg_file(path: &Path) -> Result<toml::Value> {
-    let toml_str = file::read(path)?;
-
-    let first_error = match toml_str.parse() {
-        Ok(ret) => return Ok(ret),
-        Err(e) => e,
-    };
-
-    let mut second_parser = toml::de::Deserializer::new(&toml_str);
-    second_parser.set_require_newline_after_table(false);
-    if let Ok(ret) = toml::Value::deserialize(&mut second_parser) {
-        let msg = format!(
-            "\
-TOML file found which contains invalid syntax and will soon not parse
-at `{}`.
-The TOML spec requires newlines after table definitions (e.g., `[a] b = 1` is
-invalid), but this file has a table header which does not have a newline after
-it. A newline needs to be added and this warning will soon become a hard error
-in the future.",
-            path.display()
-        );
-        println!("{}", &msg);
-        return Ok(ret);
+pub fn read_pkg_file(path: &Path) -> Result<TomlManifest> {
+    // Validate TOML file extension
+    let ext = path.extension();
+    if ext.is_none() || ext.unwrap().is_empty() || ext.unwrap().ne("toml") {
+        bail!("configuration file should be in toml format. E.g `config.toml`");
     }
 
-    let first_error = anyhow::Error::from(first_error);
-    Err(first_error.context("could not parse input as TOML"))
+    // TODO: validate minimal TOML file structure needed
+    let toml = read_toml_file(path).with_context(|| "error reading toml configuration file")?;
+    let mut unused = BTreeSet::new();
+    let manifest: TomlManifest = serde_ignored::deserialize(toml, |path| {
+        let mut key = String::new();
+        file::stringify(&mut key, &path);
+        unused.insert(key);
+    })
+    .with_context(|| "error during toml configuration file deserialization")?;
+
+    for key in unused {
+        println!("Warning: unused configuration manifest key \"{key}\" or unsupported");
+    }
+
+    Ok(manifest)
+}
+
+/// Read and parse a TOML file from an specific path.
+fn read_toml_file(path: &Path) -> Result<toml::Value> {
+    let toml_str = file::read(path).with_context(|| {
+        format!(
+            "error trying to deserialize toml configuration file at \"{}\"",
+            path.display()
+        )
+    })?;
+    toml_str
+        .parse()
+        .map_err(|e| anyhow::Error::from(e).context("could not parse input as TOML"))
 }

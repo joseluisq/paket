@@ -1,6 +1,6 @@
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
-use std::{collections::BTreeSet, path::Path};
 use structopt::StructOpt;
 use sysinfo::{ProcessExt, System, SystemExt};
 
@@ -167,20 +167,7 @@ impl<'a> Paket {
         })?;
 
         // Detect and read the `paket.toml` file
-        let toml = config::read_pkg_file(&pkg_toml_path)?;
-        let mut unused = BTreeSet::new();
-        let manifest: config::TomlManifest = serde_ignored::deserialize(toml, |path| {
-            let mut key = String::new();
-            helper_file::stringify(&mut key, &path);
-            unused.insert(key);
-        })?;
-
-        for key in unused {
-            println!(
-                "Warning: unused Paket manifest key `{}` or unsuported.",
-                key
-            );
-        }
+        let manifest = config::read_pkg_file(&pkg_toml_path)?;
 
         // Read `package` toml section
         let toml_pkg = if manifest.package.is_some() {

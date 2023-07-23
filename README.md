@@ -42,7 +42,7 @@ brew install paket-src
 
 ```sh
 ~> paket --help
-paket 0.1.1
+paket 0.1.3
 Jose Quintana <https://joseluisq.net>
 A simple and fast package manager for the Fish shell
 
