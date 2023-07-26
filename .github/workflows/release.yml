@@ -8,7 +8,7 @@ on:
 jobs:
   create-release:
     name: create-release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       upload_url: ${{ steps.release.outputs.upload_url }}
       paket_version: ${{ env.PAKET_VERSION }}
@@ -60,39 +60,39 @@ jobs:
           - macos-arm64
         include:
         - build: linux-musl
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: x86_64-unknown-linux-musl
         - build: linux-musl-i686
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: i686-unknown-linux-musl
         - build: linux-musl-arm64
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: aarch64-unknown-linux-musl
         - build: linux-gnu
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: x86_64-unknown-linux-gnu
         - build: linux-gnu-i686
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: i686-unknown-linux-gnu
         - build: linux-gnu-arm64
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: aarch64-unknown-linux-gnu
         - build: linux-arm-gnueabihf
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           rust: stable
           target: arm-unknown-linux-gnueabihf
         - build: macos
-          os: macos-11
+          os: macos-12
           rust: stable
           target: x86_64-apple-darwin
         - build: macos-arm64
-          os: macos-11
+          os: macos-12
           rust: stable
           target: aarch64-apple-darwin
 
@@ -108,10 +108,10 @@ jobs:
         toolchain: ${{ matrix.rust }}
         target: ${{ matrix.target }}
 
-    - name: Use Cross
+    - name: Set up Cross
       shell: bash
       run: |
-        cargo install cross
+        cargo install cross@^0.2
         echo "CARGO_BIN=cross" >> $GITHUB_ENV
         echo "TARGET_FLAGS=--target ${{ matrix.target }}" >> $GITHUB_ENV
         echo "TARGET_DIR=./target/${{ matrix.target }}" >> $GITHUB_ENV
@@ -124,38 +124,6 @@ jobs:
 
     - name: Build release binary
       run: ${{ env.CARGO_BIN }} build --verbose --release ${{ env.TARGET_FLAGS }}
-
-    - name: Strip release binary (linux and macos)
-      if: matrix.build != 'linux-arm-gnueabihf' && matrix.build != 'linux-gnu-arm64' && matrix.build != 'linux-musl-arm64' && matrix.build != 'linux-musl-i686'
-      run: strip "target/${{ matrix.target }}/release/paket"
-
-    - name: Strip release binary (linux-arm-gnueabihf)
-      if: matrix.build == 'linux-arm-gnueabihf'
-      run: |
-        docker run --rm -v "$PWD/target:/target:Z" \
-          rustembedded/cross:arm-unknown-linux-gnueabihf \
-          arm-linux-gnueabihf-strip /target/arm-unknown-linux-gnueabihf/release/paket
-
-    - name: Strip release binary (linux-gnu-arm64)
-      if: matrix.build == 'linux-gnu-arm64'
-      run: |
-        docker run --rm -v "$PWD/target:/target:Z" \
-          rustembedded/cross:aarch64-unknown-linux-gnu \
-          aarch64-linux-gnu-strip /target/aarch64-unknown-linux-gnu/release/paket
-
-    - name: Strip release binary (linux-musl-arm64)
-      if: matrix.build == 'linux-musl-arm64'
-      run: |
-        docker run --rm -v "$PWD/target:/target:Z" \
-          rustembedded/cross:aarch64-unknown-linux-musl \
-          aarch64-linux-musl-strip /target/aarch64-unknown-linux-musl/release/paket
-
-    - name: Strip release binary (linux-musl-i686)
-      if: matrix.build == 'linux-musl-i686'
-      run: |
-        docker run --rm -v "$PWD/target:/target:Z" \
-          rustembedded/cross:i686-unknown-linux-musl \
-          i686-linux-musl-strip /target/i686-unknown-linux-musl/release/paket
 
     - name: Build archive
       shell: bash
