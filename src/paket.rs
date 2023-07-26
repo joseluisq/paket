@@ -1,7 +1,7 @@
+use clap::Parser;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use sysinfo::{ProcessExt, System, SystemExt};
 
 use crate::cli::{App, CommandOpts};
@@ -64,7 +64,7 @@ impl<'a> Paket {
         }
 
         let paths = Self::configure_paths()?;
-        let opts = CommandOpts::from_args();
+        let opts = CommandOpts::parse();
 
         Ok(Self { paths, opts })
     }

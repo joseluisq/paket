@@ -24,21 +24,22 @@ name = "paket"
 path = "src/lib.rs"
 
 [dependencies]
-dirs = "4.0"
-toml = "0.5"
-structopt = { version = "0.3", default-features = false }
+dirs = "5.0"
+toml = "0.7"
+clap = { version = "4.3", features = ["derive", "env"] }
 anyhow = "1.0"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_ignored = "0.1"
 semver = { version = "1.0", default-features = false, features = ["serde"] }
-sysinfo = "0.26"
+sysinfo = "0.29"
 libc = "0.2"
 
 [profile.release]
-opt-level = 3
-lto = "fat"
 codegen-units = 1
-panic = "abort"
 debug = false
-rpath = false
 debug-assertions = false
+lto = "fat"
+opt-level = 3
+panic = "abort"
+rpath = false
+strip = true

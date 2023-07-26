@@ -1,19 +1,19 @@
-use structopt::StructOpt;
+use clap::Parser;
 
 /// A simple and fast package manager for the Fish shell 📦
-#[derive(Debug, StructOpt)]
-#[structopt(about, author)]
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
 pub struct CommandOpts {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     pub commands: Option<Commands>,
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(clap::Subcommand, Debug)]
 pub enum Commands {
     /// Install a new package from a local or remote repository.
-    #[structopt(name = "add")]
+    #[command(name = "add")]
     Add {
-        #[structopt(short = "p", long, default_value = "github")]
+        #[arg(short = 'p', long, default_value = "github")]
         /// A Git host provider like github, bitbucket or gitlab.
         provider: String,
         /// Package name. E.g joseluisq/gitnow
@@ -21,14 +21,14 @@ pub enum Commands {
     },
 
     /// Update an existing package from a local or remote repository.
-    #[structopt(name = "up")]
+    #[command(name = "up")]
     Update {
         /// Package name. E.g joseluisq/gitnow
         pkg_name: String,
     },
 
     /// Uninstall an existing package from a local or remote repository.
-    #[structopt(name = "rm")]
+    #[command(name = "rm")]
     Remove {
         /// Package name. E.g joseluisq/gitnow
         pkg_name: String,
