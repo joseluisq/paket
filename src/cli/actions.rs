@@ -22,7 +22,12 @@ impl<'a> Actions<'a> {
     pub fn install(&mut self, pkg_name: &str, git_provider: &str) -> Result {
         let pkg_fmt = PkgNameFmt::from(pkg_name)?;
         let pkg_name = &pkg_fmt.get_short_name();
-        let pkg_tag = Some(pkg_fmt.pkg_tag.as_ref());
+        let pkg_tag = pkg_fmt.pkg_tag.as_str().trim();
+        let pkg_tag = if pkg_tag.is_empty() {
+            None
+        } else {
+            Some(pkg_tag)
+        };
         let branch_tag = pkg_tag.unwrap_or("");
         let mut is_pkg_local = false;
 
@@ -92,7 +97,12 @@ impl<'a> Actions<'a> {
     pub fn update(&mut self, pkg_name: &str) -> Result {
         let pkg_fmt = PkgNameFmt::from(pkg_name)?;
         let pkg_name = &pkg_fmt.get_short_name();
-        let pkg_tag = Some(pkg_fmt.pkg_tag.as_ref());
+        let pkg_tag = pkg_fmt.pkg_tag.as_str().trim();
+        let pkg_tag = if pkg_tag.is_empty() {
+            None
+        } else {
+            Some(pkg_tag)
+        };
         let branch_tag = pkg_tag.unwrap_or("");
         let mut is_pkg_local = false;
 
