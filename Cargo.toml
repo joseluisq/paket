@@ -26,8 +26,8 @@ path = "src/lib.rs"
 
 [dependencies]
 dirs = "5.0"
-toml = "0.7"
-clap = { version = "4.3", features = ["derive", "env"] }
+toml = "0.8"
+clap = { version = "4.4", features = ["derive", "env"] }
 anyhow = "1.0"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_ignored = "0.1"
