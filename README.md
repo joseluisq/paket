@@ -1,27 +1,27 @@
 # Paket 📦 [![devel](https://github.com/joseluisq/paket/actions/workflows/devel.yml/badge.svg)](https://github.com/joseluisq/paket/actions/workflows/devel.yml) [![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/joseluisq/paket/latest)](https://hub.docker.com/r/joseluisq/paket/) [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/joseluisq/paket/latest)](https://hub.docker.com/r/joseluisq/paket/) [![Docker Image](https://img.shields.io/docker/pulls/joseluisq/paket.svg)](https://hub.docker.com/r/joseluisq/paket/)
 
-> A simple and fast package manager for the [Fish shell](https://fishshell.com/) written in [Rust](https://www.rust-lang.org/). 🐠
+> A simple and fast package manager for the [Fish Shell](https://fishshell.com/) written in [Rust](https://www.rust-lang.org/). 🐠
 
-This is an *WIP* Git-based *"package manager"* for Fish shell which is under **active** development.
+This is a Git-based *"package manager"* for [Fish Shell](https://fishshell.com/) which is under **active** development.
 
-**Note:** Some features are missing right now but it covers the most of functionalities needed to be usable. However feel free to contribute. See [TODO](#todo) list.
+**Note:** Some features are missing right now but it covers the most of functionalities needed to be usable. However, feel free to contribute. See [TODO](#todo) list.
 
 ## Features
 
-- Rely only on [Git](https://git-scm.com/) binary and its well known features (clone, fetch, checkout, pull, tag, etc).
+- Rely only on [Git](https://git-scm.com/) binary and its well-known features (clone, fetch, checkout, pull, tag, etc).
 - No registries. Git repositories instead.
 - Just uses the format: `username/package_name@(tag_name|branch_name)`.
 - Install, update or remove packages from local repositories or remote ones.
-- Tiny but ultra fast static binary powered by [Rust](https://www.rust-lang.org/).
+- Tiny but ultra-fast static binary powered by [Rust](https://www.rust-lang.org/).
 - Package file support ([`paket.toml`](#package-file)) to describe a package and copy optional non `.fish` files.
 - Trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) when a package is installed, updated or uninstalled.
 - It runs only on top of a Fish shell session (Fish parent process).
-- First class Docker support.
+- First-class Docker support.
 
 ## Download/Install
 
 - Docker image using latest Alpine → [hub.docker.com/r/joseluisq/paket](https://hub.docker.com/r/joseluisq/paket)
-- Release binaries for Linux/Macos amd64 → [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
+- Pre-compiled binaries for Linux, macOS and other targets → [github.com/joseluisq/paket/releases](https://github.com/joseluisq/paket/releases)
 
 ### MacOS
 
@@ -80,8 +80,8 @@ SUBCOMMANDS:
 
 ## Paket file
 
-Paket supports a `paket.toml` file in order to describe a package and copy optional non `.fish` files.
-Here a sample file of [GitNow](https://github.com/joseluisq/gitnow) Fish package.
+Paket supports a `paket.toml` file to describe a package and copy optional non `.fish` files.
+Here is a sample file of [GitNow](https://github.com/joseluisq/gitnow) Fish package.
 
 ```toml
 [package]
@@ -119,7 +119,7 @@ before-uninstall = "gitnow_uninstall"
 
 ## Fish shell events
 
-Paket has few events which can be used to trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) defined in your package.
+Paket has a few events which can be used to trigger [Fish shell events](https://fishshell.com/docs/current/cmds/emit.html) defined in your package.
 
 - `after-install`: After a package is installed.
 - `after-update`: After a package is updated.
@@ -130,7 +130,7 @@ Paket has few events which can be used to trigger [Fish shell events](https://fi
 Appending a `-e` or `--on-event` flag to your function(s) tells Fish to run it when the specified named event is emitted.
 
 Use the format `[package_name]_[event_name]` without the brackets and spaces (underscores instead).
-Also make sure that every value match with your package's Fish shell event (`--on-event`).
+Also, make sure that every value matches with your package's Fish Shell event (`--on-event`).
 
 ### Package example
 
@@ -162,7 +162,7 @@ function __my_package_uninstall -e mypackage_uninstall
 end
 ```
 
-Find out an example on [GitNow](https://github.com/joseluisq/gitnow/blob/master/conf.d/gitnow.fish) repository.
+Find an example on [GitNow](https://github.com/joseluisq/gitnow/blob/master/conf.d/gitnow.fish) repository.
 
 ## TODO
 
@@ -174,7 +174,7 @@ Find out an example on [GitNow](https://github.com/joseluisq/gitnow/blob/master/
 - [x] Dispatch Fish shell events when a package is installed, updated or uninstalled.
 - [x] Define Paket events via `paket.toml` file.
 - [x] Ability to install, update and remove packages from local repositories.
-- [ ] Prevent unnecessary clones for same versions (branches/tags)
+- [ ] Prevent unnecessary clones for the same versions (branches/tags)
 - [ ] Dependencies support.
 - [ ] Add configuration file `~/paket.toml` support.
 - [ ] ?
