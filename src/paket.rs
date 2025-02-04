@@ -2,7 +2,7 @@ use clap::Parser;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
-use sysinfo::{ProcessExt, System, SystemExt};
+use sysinfo::System;
 
 use crate::cli::{App, CommandOpts};
 use crate::helpers::{file as helper_file, process, Command};
@@ -56,7 +56,7 @@ impl<'a> Paket {
         // Check if `paket` is running on top of a Fish shell session
         let pid = process::getppid().to_string();
         let on_fish = System::new_all()
-            .processes_by_name("fish")
+            .processes_by_name("fish".as_ref())
             .any(|p| p.pid().to_string() == pid);
 
         if !on_fish {
