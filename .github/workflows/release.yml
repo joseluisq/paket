@@ -68,7 +68,7 @@ jobs:
           rust: stable
           target: i686-unknown-linux-musl
         - build: linux-musl-arm64
-          os: ubuntu-22.04-arm
+          os: ubuntu-22.04
           rust: stable
           target: aarch64-unknown-linux-musl
         - build: linux-gnu
@@ -80,11 +80,11 @@ jobs:
           rust: stable
           target: i686-unknown-linux-gnu
         - build: linux-gnu-arm64
-          os: ubuntu-22.04-arm
+          os: ubuntu-22.04
           rust: stable
           target: aarch64-unknown-linux-gnu
         - build: linux-arm-gnueabihf
-          os: ubuntu-22.04-arm
+          os: ubuntu-22.04
           rust: stable
           target: arm-unknown-linux-gnueabihf
         - build: macos
