@@ -14,10 +14,10 @@ pub struct PkgNameFmt {
     pkg_path: Option<PathBuf>,
 }
 
-impl<'a> PkgNameFmt {
+impl PkgNameFmt {
     /// Return a `PkgNameFmt` instance but making sure that current package name format is valid.
     /// Format: username/package_name@(tag_name|branch_name)
-    pub fn from(pkg_name: &'a str) -> Result<Self> {
+    pub fn from(pkg_name: &str) -> Result<Self> {
         if pkg_name.is_empty() {
             bail!("provide a package name or a local Git package directory path.");
         }
