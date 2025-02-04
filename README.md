@@ -42,22 +42,19 @@ brew install paket-src
 
 ```sh
 ~> paket --help
-paket 0.1.3
-Jose Quintana <https://joseluisq.net>
 A simple and fast package manager for the Fish shell
 
-USAGE:
-    paket [SUBCOMMAND]
+Usage: paket [COMMAND]
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+Commands:
+  add   Install a new package from a local or remote repository
+  up    Update an existing package from a local or remote repository
+  rm    Uninstall an existing package from a local or remote repository
+  help  Print this message or the help of the given subcommand(s)
 
-SUBCOMMANDS:
-    add     Install a new package from a local or remote repository
-    help    Prints this message or the help of the given subcommand(s)
-    rm      Uninstall an existing package from a local or remote repository
-    up      Update an existing package from a local or remote repository
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
 ### Examples
