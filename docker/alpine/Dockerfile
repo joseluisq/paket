@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM alpine:3.21.0 as build
+FROM --platform=$BUILDPLATFORM alpine:3.21.3 as build
 
 ARG TARGETPLATFORM
 ARG PAKET_VERSION=0.0.0
@@ -18,7 +18,7 @@ RUN set -ex; \
     rm -rf /tmp/paket.tar.gz paket-v${PAKET_VERSION}-${target}; \
     chmod +x /usr/local/bin/paket
 
-FROM alpine:3.21.0
+FROM alpine:3.21.3
 
 ARG PAKET_VERSION=0.0.0
 ENV PAKET_VERSION=${PAKET_VERSION}
