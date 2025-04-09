@@ -33,7 +33,7 @@ impl PkgNameFmt {
                 .with_context(|| "Package path directory doesn't exist or inaccessible.")?;
 
             // We take the dirname as package name
-            let pkg_name = match pkg_path.iter().last() {
+            let pkg_name = match pkg_path.iter().next_back() {
                 Some(v) => v.to_str().unwrap().into(),
                 None => bail!(
                     "directory name for path \"{}\" was not determined",
