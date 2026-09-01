@@ -1,6 +1,24 @@
 name: devel
-
-on: [push, pull_request]
+on:
+  merge_group:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - .github/workflows/devel.yml
+      - Cargo.lock
+      - Cargo.toml
+      - src/**
+      - tests/**
+  push:
+    branches:
+    - master
+    paths:
+      - .github/workflows/devel.yml
+      - Cargo.lock
+      - Cargo.toml
+      - src/**
+      - tests/**
 
 jobs:
   test:
