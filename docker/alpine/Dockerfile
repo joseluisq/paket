@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM alpine:3.23.3 as build
+FROM --platform=$BUILDPLATFORM alpine:3.24.1 as build
 
 ARG TARGETPLATFORM
 ARG PAKET_VERSION=0.0.0
@@ -18,7 +18,7 @@ RUN set -ex; \
     rm -rf /tmp/paket.tar.gz paket-v${PAKET_VERSION}-${target}; \
     chmod +x /usr/local/bin/paket
 
-FROM alpine:3.23.3
+FROM alpine:3.24.1
 
 ARG PAKET_VERSION=0.0.0
 ENV PAKET_VERSION=${PAKET_VERSION}
@@ -30,6 +30,7 @@ LABEL version="${PAKET_VERSION}" \
 RUN set -eux \
     && apk --no-cache add fish git less openssh \
     && rm -rf /var/lib/apt/lists/* \
+    && fish -v \
     && true
 
 COPY --from=build /usr/local/bin/paket /usr/local/bin/
