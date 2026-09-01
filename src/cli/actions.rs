@@ -46,7 +46,7 @@ impl<'a> Actions<'a> {
             );
             pkg_path
         } else {
-            println!("Installing package `{}@{}`...", &pkg_name, branch_tag);
+            println!("Installing package `{}@{}`...", pkg_name, branch_tag);
 
             if self.paket.pkg_exists(pkg_name) {
                 bail!(
@@ -73,7 +73,7 @@ impl<'a> Actions<'a> {
         if let Some(toml_pkg) = manifest.package {
             // Copy all corresponding package files to Fish shell directories
             self.paket
-                .scan_pkg_dir(pkg_dir, &toml_pkg.include, |src, dest| {
+                .scan_pkg_dir(pkg_dir.to_path_buf(), &toml_pkg.include, |src, dest| {
                     fs::copy(src, dest)?;
                     Ok(())
                 })?;
@@ -115,7 +115,7 @@ impl<'a> Actions<'a> {
             );
             pkg_path
         } else {
-            println!("Updating package `{}@{}`...", &pkg_name, branch_tag);
+            println!("Updating package `{}@{}`...", pkg_name, branch_tag);
 
             if !self.paket.pkg_exists(pkg_name) {
                 bail!(
@@ -143,7 +143,7 @@ impl<'a> Actions<'a> {
         if let Some(toml_pkg) = manifest.package {
             // Copy all corresponding package files to Fish shell directories
             self.paket
-                .scan_pkg_dir(pkg_dir, &toml_pkg.include, |src, dest| {
+                .scan_pkg_dir(pkg_dir.to_path_buf(), &toml_pkg.include, |src, dest| {
                     fs::copy(src, dest)?;
                     Ok(())
                 })?;
@@ -179,7 +179,7 @@ impl<'a> Actions<'a> {
             );
             pkg_path
         } else {
-            println!("Uninstalling package `{}`...", &pkg_name);
+            println!("Uninstalling package `{}`...", pkg_name);
 
             // Process Fish shell package structure
             let pkg_dir = self.git.base_dir.join(pkg_name);

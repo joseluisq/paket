@@ -1,13 +1,6 @@
 name: devel
-on:
-  pull_request:
-  push:
-    branches:
-    - master
-    - staging
-    - trying
-  schedule:
-  - cron: '30 02 * * *' # Every day at 01:30 UTC
+
+on: [push, pull_request]
 
 jobs:
   test:
