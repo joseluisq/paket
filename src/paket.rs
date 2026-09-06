@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use sysinfo::System;
 
 use crate::cli::{App, CommandOpts};
-use crate::helpers::{file as helper_file, process, Command};
+use crate::helpers::{Command, file as helper_file, process};
 use crate::pkg::config;
 use crate::result::{Context, Result};
 
@@ -60,7 +60,9 @@ impl<'a> Paket {
             .any(|p| p.pid().to_string() == pid);
 
         if !on_fish {
-            bail!("Paket is not running on top of a Fish shell session. Just run `fish` and then use `paket` from there.")
+            bail!(
+                "Paket is not running on top of a Fish shell session. Just run `fish` and then use `paket` from there."
+            )
         }
 
         let paths = Self::configure_paths()?;

@@ -119,8 +119,8 @@ impl<'a> Actions<'a> {
 
             if !self.paket.pkg_exists(pkg_name) {
                 bail!(
-                "package `{}` is not installed. Try to use the `add` command to install it first.",
-                pkg_name
+                    "package `{}` is not installed. Try to use the `add` command to install it first.",
+                    pkg_name
                 )
             }
 

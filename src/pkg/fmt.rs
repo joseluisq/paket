@@ -62,7 +62,9 @@ impl PkgNameFmt {
             //  TODO: This message below is a workaround since either the `pacakge/name` format as well as
             // a package dir path can have a "path-like" structure (name with slashes),
             // however we could approach this differently in the future
-            bail!("provided package has not a valid `username/package_name` format or if it was a package path directory it doesn't exist or is inaccessible.");
+            bail!(
+                "provided package has not a valid `username/package_name` format or if it was a package path directory it doesn't exist or is inaccessible."
+            );
         }
 
         let pkg_name = pkg_name_parts[0].trim();
